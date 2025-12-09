@@ -2,11 +2,18 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getLoginUrl } from "@/const";
-import { TrendingUp, Brain, Bell, BarChart3, Zap, Shield } from "lucide-react";
+import { TrendingUp, Brain, Bell, BarChart3, Zap, Shield, ArrowRight, TrendingDown } from "lucide-react";
 import { Link } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  
+  // 獲取最新的大額交易（用於實時演示）
+  const { data: whaleTrades, isLoading } = trpc.trades.getWhaleTrades.useQuery(
+    { limit: 5 },
+    { refetchInterval: 10000 } // 每 10 秒刷新一次
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,6 +76,108 @@ export default function Home() {
         {/* Decorative lines */}
         <div className="absolute left-0 top-1/4 w-1 h-64 bg-gradient-to-b from-primary/50 to-transparent" />
         <div className="absolute right-0 top-1/3 w-1 h-64 bg-gradient-to-b from-secondary/50 to-transparent" />
+      </section>
+
+      {/* Live Demo Section */}
+      <section className="py-24 border-t border-border bg-gradient-to-b from-background to-background/50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 neon-glow-pink">
+              實時演示
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              查看最新的大額交易和 AI 預測結果，體驗 Bentana 的實時分析能力
+            </p>
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : whaleTrades && whaleTrades.length > 0 ? (
+            <div className="space-y-4 max-w-4xl mx-auto">
+              {whaleTrades.slice(0, 5).map((trade) => (
+                <Card 
+                  key={trade.id} 
+                  className="p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`px-2 py-1 text-xs font-bold rounded ${
+                          trade.side === 'YES' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {trade.side}
+                        </span>
+                        {trade.category && (
+                          <span className="px-2 py-1 text-xs font-medium rounded bg-primary/10 text-primary">
+                            {trade.category}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                        {trade.marketTitle}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(trade.timestamp).toLocaleString('zh-TW', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-primary">
+                          ${(trade.amount / 100).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">交易金額</p>
+                      </div>
+                      
+                      {trade.consensusVote && (
+                        <div className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg bg-primary/10 border border-primary/30">
+                          <div className="flex items-center gap-1">
+                            <Brain className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-medium text-muted-foreground">AI 預測</span>
+                          </div>
+                          <span className={`text-lg font-bold ${
+                            trade.consensusVote === 'YES' ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {trade.consensusVote}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {trade.consensusConfidence}% 信心
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+              
+              <div className="text-center pt-8">
+                <Link href="/whale-trades">
+                  <Button size="lg" className="neon-border">
+                    查看所有大額交易
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <Card className="p-12 text-center bg-card/50 backdrop-blur-sm border-border max-w-2xl mx-auto">
+              <TrendingDown className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-lg text-muted-foreground mb-4">
+                正在等待實時交易數據...
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Python 後端正在連接 Polymarket，大額交易將在此展示
+              </p>
+            </Card>
+          )}
+        </div>
       </section>
 
       {/* Features Section */}

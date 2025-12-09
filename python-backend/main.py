@@ -29,7 +29,7 @@ class PolymarketBackendService:
         cprint("=" * 60, "cyan")
     
     def connect_database(self):
-        """連接到資料庫"""
+        """連接到資料庫（使用連接池）"""
         try:
             # Parse DATABASE_URL
             # Format: mysql://user:password@host:port/database
@@ -42,22 +42,47 @@ class PolymarketBackendService:
             host_db = url_parts[1].split("/")
             host_port = host_db[0].split(":")
             
-            self.db_connection = mysql.connector.connect(
+            # 使用連接池代替單一連接
+            from mysql.connector import pooling
+            
+            self.db_pool = pooling.MySQLConnectionPool(
+                pool_name="bentana_pool",
+                pool_size=5,  # 連接池大小
+                pool_reset_session=True,
                 host=host_port[0],
                 port=int(host_port[1]) if len(host_port) > 1 else 3306,
                 user=user_pass[0],
                 password=user_pass[1],
-                database=host_db[1].split("?")[0],  # Remove query params
-                autocommit=True  # 自動提交
+                database=host_db[1].split("?")[0],
+                autocommit=True,
+                # 連接超時設定
+                connect_timeout=10,
+                # 保持連接活躍
+                use_pure=False  # 使用 C 擴展以獲得更好的性能
             )
             
-            cprint("✅ Database connected successfully", "green")
+            # 測試連接
+            conn = self.db_pool.get_connection()
+            conn.close()
+            
+            cprint("✅ Database connection pool created successfully", "green")
             return True
             
         except Exception as e:
             cprint(f"❌ Database connection failed: {e}", "red")
             traceback.print_exc()
             return False
+    
+    def get_db_connection(self):
+        """從連接池獲取連接（自動重連）"""
+        try:
+            return self.db_pool.get_connection()
+        except Exception as e:
+            cprint(f"⚠️ Failed to get connection from pool: {e}", "yellow")
+            # 嘗試重新連接
+            if self.connect_database():
+                return self.db_pool.get_connection()
+            raise
     
     def initialize_agent(self):
         """初始化 Polymarket Agent"""
@@ -87,11 +112,14 @@ class PolymarketBackendService:
     
     def save_market_to_db(self, market_data: dict):
         """保存市場數據到資料庫"""
+        conn = None
+        cursor = None
         try:
-            if not self.db_connection:
+            if not hasattr(self, 'db_pool'):
                 return
             
-            cursor = self.db_connection.cursor()
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
             
             # 提取市場信息
             condition_id = market_data.get("conditionId", "")
@@ -129,21 +157,28 @@ class PolymarketBackendService:
             )
             
             cursor.execute(query, values)
-            cursor.close()
             
             # cprint(f"💾 Market saved: {title[:50]}...", "green")
             
         except Exception as e:
             cprint(f"❌ Error saving market: {e}", "red")
             traceback.print_exc()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
     
     def save_trade_to_db(self, trade_data: dict, market_data: dict):
         """保存交易數據到資料庫"""
+        conn = None
+        cursor = None
         try:
-            if not self.db_connection:
+            if not hasattr(self, 'db_pool'):
                 return
             
-            cursor = self.db_connection.cursor()
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
             
             # 首先獲取 market ID
             condition_id = market_data.get("conditionId", "")
@@ -198,7 +233,6 @@ class PolymarketBackendService:
             )
             
             cursor.execute(query, values)
-            cursor.close()
             
             if is_whale:
                 cprint(f"🐋 Whale trade saved: ${amount:,.2f} on {market_data.get('title', 'Unknown')[:50]}", "yellow")
@@ -208,6 +242,11 @@ class PolymarketBackendService:
         except Exception as e:
             cprint(f"❌ Error saving trade: {e}", "red")
             traceback.print_exc()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
     
     def on_polymarket_message(self, data: dict):
         """處理 Polymarket 消息"""
@@ -284,7 +323,7 @@ class PolymarketBackendService:
             models = [
                 "openai/gpt-4o-mini",
                 "anthropic/claude-3.5-haiku",
-                "google/gemini-flash-1.5"
+                "google/gemini-2.0-flash-exp:free"  # 使用正確的 Gemini 模型名稱
             ]
             
             self.swarm_agent = SwarmAgent(models)
@@ -352,6 +391,7 @@ Respond with ONLY a JSON object in this format:
             )
             
             # 解析 SwarmAgent 的回應
+            # swarm_result 結構: {"consensus": str, "confidence": float, "responses": list}
             predictions = []
             for response_data in swarm_result.get("responses", []):
                 try:
@@ -359,8 +399,8 @@ Respond with ONLY a JSON object in this format:
                     prediction = response_data.get("prediction", "YES")
                     reasoning = response_data.get("reasoning", "")[:200]
                     
-                    # 嘗試從 reasoning 中提取 confidence
-                    confidence = 50  # 預設值
+                    # 嘗試從 reasoning 中提取 confidence，或使用共識信心度
+                    confidence = int(swarm_result.get("confidence", 0.5) * 100)  # 轉為百分比
                     import re
                     conf_match = re.search(r'confidence["\s:]+([0-9]+)', reasoning, re.IGNORECASE)
                     if conf_match:
@@ -375,16 +415,17 @@ Respond with ONLY a JSON object in this format:
                     cprint(f"  ✅ {model_name}: {prediction} ({confidence}%)", "green")
                 except Exception as e:
                     cprint(f"  ⚠️ Parsing failed: {e}", "yellow")
+                    continue
             
             if len(predictions) == 0:
                 cprint("⚠️ No valid predictions received", "yellow")
                 return
             
-            # 計算共識
-            yes_count = sum(1 for p in predictions if p["prediction"] == "YES")
-            no_count = len(predictions) - yes_count
-            consensus = "YES" if yes_count > no_count else "NO"
-            avg_confidence = sum(p["confidence"] for p in predictions) // len(predictions)
+            # 使用 SwarmAgent 提供的共識結果
+            consensus = swarm_result.get("consensus", "YES")
+            avg_confidence = int(swarm_result.get("confidence", 0.5) * 100)
+            yes_count = swarm_result.get("agree_models", 0) if consensus == "YES" else swarm_result.get("total_models", 0) - swarm_result.get("agree_models", 0)
+            no_count = swarm_result.get("total_models", 0) - yes_count
             
             cprint(f"🎯 Consensus: {consensus} (Confidence: {avg_confidence}%, {yes_count} YES / {no_count} NO)", "cyan", attrs=['bold'])
             
@@ -400,11 +441,14 @@ Respond with ONLY a JSON object in this format:
     
     def save_prediction_to_db(self, market_id: int, consensus: str, confidence: int, model_predictions: list):
         """儲存 AI 預測到資料庫"""
+        conn = None
+        cursor = None
         try:
-            if not self.db_connection:
+            if not hasattr(self, 'db_pool'):
                 return
             
-            cursor = self.db_connection.cursor()
+            conn = self.get_db_connection()
+            cursor = conn.cursor()
             
             # 計算共識數據
             total_models = len(model_predictions)
@@ -434,13 +478,16 @@ Respond with ONLY a JSON object in this format:
                 
                 cursor.execute(query, values)
             
-            cursor.close()
-            
             cprint(f"💾 {len(model_predictions)} predictions saved to database", "green")
             
         except Exception as e:
             cprint(f"❌ Error saving prediction: {e}", "red")
             traceback.print_exc()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
     
     def on_polymarket_error(self, error: Exception):
         """處理 Polymarket 錯誤"""
@@ -560,9 +607,10 @@ Respond with ONLY a JSON object in this format:
         if self.agent:
             self.agent.stop()
         
-        cprint("🛑 Closing database connection...", "yellow")
-        if self.db_connection:
-            self.db_connection.close()
+        cprint("🛑 Closing database connection pool...", "yellow")
+        if hasattr(self, 'db_pool'):
+            # 連接池會自動關閉所有連接
+            pass
         
         cprint("👋 Goodbye!", "cyan")
 

@@ -1,0 +1,100 @@
+{
+  "query": "SELECT t.id, m.title, t.side, t.amount, t.isWhale, t.timestamp, t.createdAt\nFROM trades t\nJOIN markets m ON t.marketId = m.id\nORDER BY t.createdAt DESC\nLIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT t.id, m.title, t.side, t.amount, t.isWhale, t.timestamp, t.createdAt\nFROM trades t\nJOIN markets m ON t.marketId = m.id\nORDER BY t.createdAt DESC\nLIMIT 10",
+  "rows": [
+    {
+      "id": "30060",
+      "title": "Will the Dallas Mavericks win the 2026 NBA Finals?",
+      "side": "YES",
+      "amount": "38",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:28",
+      "createdAt": "2025-12-09 09:27:28"
+    },
+    {
+      "id": "30059",
+      "title": "Will the San Antonio Spurs win the 2026 NBA Finals?",
+      "side": "YES",
+      "amount": "5265",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:24",
+      "createdAt": "2025-12-09 09:27:24"
+    },
+    {
+      "id": "30058",
+      "title": "Will the Kansas City Chiefs win Super Bowl 2026?",
+      "side": "YES",
+      "amount": "832",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:20",
+      "createdAt": "2025-12-09 09:27:20"
+    },
+    {
+      "id": "30057",
+      "title": "Will the highest temperature in London be 63°F or higher on December 9?",
+      "side": "YES",
+      "amount": "0",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:16",
+      "createdAt": "2025-12-09 09:27:16"
+    },
+    {
+      "id": "30056",
+      "title": "Will Club Brugge advance to the round of 16?",
+      "side": "YES",
+      "amount": "504",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:12",
+      "createdAt": "2025-12-09 09:27:12"
+    },
+    {
+      "id": "30055",
+      "title": "Ethereum Up or Down - December 9, 4:15AM-4:30AM ET",
+      "side": "NO",
+      "amount": "1258",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:09",
+      "createdAt": "2025-12-09 09:27:08"
+    },
+    {
+      "id": "30054",
+      "title": "XRP Up or Down - December 9, 4:15AM-4:30AM ET",
+      "side": "NO",
+      "amount": "99",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:27:05",
+      "createdAt": "2025-12-09 09:27:04"
+    },
+    {
+      "id": "30053",
+      "title": "Will the Houston Rockets win the 2026 NBA Finals?",
+      "side": "YES",
+      "amount": "1202",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:26:32",
+      "createdAt": "2025-12-09 09:26:31"
+    },
+    {
+      "id": "30052",
+      "title": "Will the New York Knicks win the 2026 NBA Finals?",
+      "side": "YES",
+      "amount": "1410",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 04:26:28",
+      "createdAt": "2025-12-09 09:26:27"
+    },
+    {
+      "id": "30051",
+      "title": "Will the Indiana Pacers win the 2026 NBA Finals?",
+      "side": "YES",
+      "amount": "19996",
+      "isWhale": "1",
+      "timestamp": "2025-12-09 04:26:24",
+      "createdAt": "2025-12-09 09:26:24"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tside\tamount\tisWhale\ttimestamp\tcreatedAt\n30060\tWill the Dallas Mavericks win the 2026 NBA Finals?\tYES\t38\t0\t2025-12-09 04:27:28\t2025-12-09 09:27:28\n30059\tWill the San Antonio Spurs win the 2026 NBA Finals?\tYES\t5265\t0\t2025-12-09 04:27:24\t2025-12-09 09:27:24\n30058\tWill the Kansas City Chiefs win Super Bowl 2026?\tYES\t832\t0\t2025-12-09 04:27:20\t2025-12-09 09:27:20\n30057\tWill the highest temperature in London be 63°F or higher on December 9?\tYES\t0\t0\t2025-12-09 04:27:16\t2025-12-09 09:27:16\n30056\tWill Club Brugge advance to the round of 16?\tYES\t504\t0\t2025-12-09 04:27:12\t2025-12-09 09:27:12\n30055\tEthereum Up or Down - December 9, 4:15AM-4:30AM ET\tNO\t1258\t0\t2025-12-09 04:27:09\t2025-12-09 09:27:08\n30054\tXRP Up or Down - December 9, 4:15AM-4:30AM ET\tNO\t99\t0\t2025-12-09 04:27:05\t2025-12-09 09:27:04\n30053\tWill the Houston Rockets win the 2026 NBA Finals?\tYES\t1202\t0\t2025-12-09 04:26:32\t2025-12-09 09:26:31\n30052\tWill the New York Knicks win the 2026 NBA Finals?\tYES\t1410\t0\t2025-12-09 04:26:28\t2025-12-09 09:26:27\n30051\tWill the Indiana Pacers win the 2026 NBA Finals?\tYES\t19996\t1\t2025-12-09 04:26:24\t2025-12-09 09:26:24\n",
+  "stderr": "",
+  "execution_time_ms": 1626
+}

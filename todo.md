@@ -81,8 +81,8 @@
 - [x] 安裝 Python 依賴
 - [x] 啟動 Python 後端服務
 - [x] 測試 WebSocket 連接
-- [ ] 測試實時數據推送
-- [ ] 驗證 AI 預測功能
+- [x] 測試實時數據推送
+- [x] 驗證 AI 預測功能
 
 
 ## Polymarket WebSocket 連接修復
@@ -123,3 +123,26 @@
 - [x] 在前端添加分類篩選器
 - [x] 優化大額交易頁面的分類展示
 - [x] 測試分類功能和數據流
+
+## Python 後端穩定性修復（2024-12-09）
+- [x] 修復 SwarmAgent 回應解析邏輯錯誤
+- [x] 實作 MySQL 連接池機制，解決連接斷開問題
+- [x] 添加自動重連機制
+- [x] 創建後端服務管理腳本（start_service.sh, stop_service.sh, restart_service.sh）
+- [x] 修復 Gemini 模型名稱錯誤（使用 google/gemini-2.0-flash-exp:free）
+- [x] 驗證 AI 預測功能正常運作（GPT-4o Mini + Claude 3.5 Haiku + Gemini）
+
+## 端到端數據流驗證（2024-12-09）
+- [x] 驗證 Polymarket RTDS → Python 後端連接
+- [x] 驗證 Python 後端 → MySQL 數據保存
+- [x] 驗證資料庫中有真實的交易和預測數據（31 筆大額交易，4 條 AI 預測）
+- [x] 驗證 Node.js tRPC API → 前端數據展示
+- [x] 確認大額交易頁面正確顯示 AI 預測徵章
+
+## 首頁實時演示區塊（2024-12-09）
+- [x] 實作首頁實時演示區塊
+- [x] 顯示最新 5 筆大額交易
+- [x] 顯示 AI 預測結果和信心度
+- [x] 添加交易分類標籤（Sports、Other 等）
+- [x] 實作自動刷新機制（每 10 秒）
+- [x] 添加「查看所有大額交易」按鈕
