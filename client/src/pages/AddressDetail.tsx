@@ -15,6 +15,7 @@ export default function AddressDetail() {
   const { data: marketPerformance, isLoading: performanceLoading } = trpc.addresses.getMarketPerformance.useQuery({ addressId });
   const { data: winRateTrend, isLoading: trendLoading } = trpc.addresses.getWinRateTrend.useQuery({ addressId });
   const { data: categoryFocus, isLoading: focusLoading } = trpc.addresses.getCategoryFocus.useQuery({ addressId });
+  const { data: scoreBreakdown, isLoading: breakdownLoading } = trpc.addresses.getSuspicionScoreBreakdown.useQuery({ addressId });
 
   if (addressLoading) {
     return (
@@ -163,6 +164,139 @@ export default function AddressDetail() {
           ) : (
             <div className="h-64 flex items-center justify-center text-muted-foreground">
               暫無趨勢數據
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 可疑度分數分解 */}
+      <Card className="border-pink-500/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-pink-500" />
+            可疑度分數詳細分解
+          </CardTitle>
+          <CardDescription>多維度評估系統（總分 100 分）</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {breakdownLoading ? (
+            <div className="h-64 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+            </div>
+          ) : scoreBreakdown ? (
+            <div className="space-y-4">
+              {/* 總分 */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-pink-500/10 border border-pink-500/20">
+                <div className="text-lg font-semibold">總可疑度分數</div>
+                <div className="text-3xl font-bold text-pink-500">{scoreBreakdown.totalScore}</div>
+              </div>
+
+              {/* 分數分解 */}
+              <div className="space-y-3">
+                {/* 勝率異常高 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">🏆 勝率異常高</span>
+                    <span className="text-muted-foreground">
+                      {scoreBreakdown.breakdown.winRateScore} / {scoreBreakdown.maxScores.winRate}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-pink-500 transition-all"
+                      style={{ width: `${(scoreBreakdown.breakdown.winRateScore / scoreBreakdown.maxScores.winRate) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    勝率超過 70% 的機率極低，可能有內幕資訊
+                  </p>
+                </div>
+
+                {/* 經常早期下注 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">⏰ 經常早期下注</span>
+                    <span className="text-muted-foreground">
+                      {scoreBreakdown.breakdown.earlyTradingScore} / {scoreBreakdown.maxScores.earlyTrading}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-purple-500 transition-all"
+                      style={{ width: `${(scoreBreakdown.breakdown.earlyTradingScore / scoreBreakdown.maxScores.earlyTrading) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    在市場價格大幅變動前 24-72 小時就下注
+                  </p>
+                </div>
+
+                {/* 大額交易 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">🐳 大額交易</span>
+                    <span className="text-muted-foreground">
+                      {scoreBreakdown.breakdown.tradeSizeScore} / {scoreBreakdown.maxScores.tradeSize}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-cyan-500 transition-all"
+                      style={{ width: `${(scoreBreakdown.breakdown.tradeSizeScore / scoreBreakdown.maxScores.tradeSize) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    平均交易金額遠高於一般交易者
+                  </p>
+                </div>
+
+                {/* 時機精準 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">🎯 時機精準</span>
+                    <span className="text-muted-foreground">
+                      {scoreBreakdown.breakdown.timingScore} / {scoreBreakdown.maxScores.timing}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-green-500 transition-all"
+                      style={{ width: `${(scoreBreakdown.breakdown.timingScore / scoreBreakdown.maxScores.timing) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    進出市場的時機總是在最佳時刻
+                  </p>
+                </div>
+
+                {/* 選擇性參與 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">🎯 選擇性參與</span>
+                    <span className="text-muted-foreground">
+                      {scoreBreakdown.breakdown.selectivityScore} / {scoreBreakdown.maxScores.selectivity}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-yellow-500 transition-all"
+                      style={{ width: `${(scoreBreakdown.breakdown.selectivityScore / scoreBreakdown.maxScores.selectivity) * 100}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    只參與特定類型的市場，不隨意下注
+                  </p>
+                </div>
+              </div>
+
+              {/* 說明 */}
+              <div className="mt-4 p-3 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                <p>⚠️ 注意：可疑度分數僅基於公開的鏈上數據和統計分析，不構成任何法律指控或投資建議。高分數並不意味著該地址一定從事內幕交易，可能只是交易策略優秀或運氣好。</p>
+              </div>
+            </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center text-muted-foreground">
+              無法載入分數分解
             </div>
           )}
         </CardContent>

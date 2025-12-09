@@ -207,6 +207,46 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getAddressCategoryFocus(input.addressId);
       }),
+
+    getSuspicionScoreBreakdown: publicProcedure
+      .input(z.object({ addressId: z.number() }))
+      .query(async ({ input }) => {
+        // 模擬可疑度分數分解（後續可以替換為真實數據）
+        const addressId = input.addressId;
+        
+        // 使用 addressId 生成可重現的模擬數據
+        const seed = addressId;
+        const random = (min: number, max: number) => {
+          const x = Math.sin(seed * 9999) * 10000;
+          return min + (x - Math.floor(x)) * (max - min);
+        };
+
+        const winRateScore = Math.round(random(15, 30));
+        const earlyTradingScore = Math.round(random(10, 25));
+        const tradeSizeScore = Math.round(random(8, 20));
+        const timingScore = Math.round(random(6, 15));
+        const selectivityScore = Math.round(random(4, 10));
+
+        const totalScore = winRateScore + earlyTradingScore + tradeSizeScore + timingScore + selectivityScore;
+
+        return {
+          totalScore,
+          breakdown: {
+            winRateScore,
+            earlyTradingScore,
+            tradeSizeScore,
+            timingScore,
+            selectivityScore,
+          },
+          maxScores: {
+            winRate: 30,
+            earlyTrading: 25,
+            tradeSize: 20,
+            timing: 15,
+            selectivity: 10,
+          },
+        };
+      }),
   }),
 
   // Notifications API (Protected)
