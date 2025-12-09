@@ -374,3 +374,105 @@ export async function getUnreadNotificationCount(userId: number) {
   const result = await db.select({ count: sql<number>`count(*)` }).from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
   return result[0]?.count ?? 0;
 }
+
+
+// ============ Address Operations ============
+// 注意：由於 addresses 表是通過 SQL 直接創建的，而不是通過 drizzle schema，
+// 所以這裡我們返回簡單的模擬數據作為演示。
+// 待後續完善 drizzle schema 後再使用真實數據。
+
+/**
+ * 獲取地址列表（模擬數據）
+ */
+export async function getAddresses(params: {
+  limit?: number;
+  offset?: number;
+}) {
+  // 模擬數據
+  const mockAddresses = [
+    {
+      id: 1,
+      address: '0x8f3ff3c5750c20479f68db28407912bd8df67afa',
+      total_volume: 1500000,
+      total_trades: 245,
+      avg_trade_size: 6122.45,
+      win_rate: 72.5,
+      suspicion_score: 85,
+      is_suspicious: true,
+      first_seen_at: new Date('2024-01-15'),
+      last_active_at: new Date('2024-12-08')
+    },
+    {
+      id: 2,
+      address: '0x742d35cc6634c0532925a3b844bc9e7595f0beb',
+      total_volume: 890000,
+      total_trades: 156,
+      avg_trade_size: 5705.13,
+      win_rate: 68.2,
+      suspicion_score: 78,
+      is_suspicious: true,
+      first_seen_at: new Date('2024-02-20'),
+      last_active_at: new Date('2024-12-07')
+    },
+    {
+      id: 3,
+      address: '0x1234567890abcdef1234567890abcdef12345678',
+      total_volume: 650000,
+      total_trades: 98,
+      avg_trade_size: 6632.65,
+      win_rate: 65.3,
+      suspicion_score: 72,
+      is_suspicious: true,
+      first_seen_at: new Date('2024-03-10'),
+      last_active_at: new Date('2024-12-06')
+    }
+  ];
+
+  const { limit = 20, offset = 0 } = params;
+  return mockAddresses.slice(offset, offset + limit);
+}
+
+/**
+ * 根據 ID 獲取地址詳情（模擬數據）
+ */
+export async function getAddressById(addressId: number) {
+  const addresses = await getAddresses({ limit: 100 });
+  return addresses.find(a => a.id === addressId) || null;
+}
+
+/**
+ * 獲取地址的交易記錄（模擬數據）
+ */
+export async function getAddressTrades(addressId: number, params: {
+  limit?: number;
+  offset?: number;
+}) {
+  // 模擬數據
+  return [];
+}
+
+/**
+ * 獲取地址排行榜（模擬數據）
+ */
+export async function getAddressLeaderboard(params: {
+  metric?: 'suspicion_score' | 'win_rate' | 'total_volume';
+  limit?: number;
+}) {
+  const { limit = 10 } = params;
+  const addresses = await getAddresses({ limit });
+  return addresses;
+}
+
+/**
+ * 獲取地址統計數據（模擬數據）
+ */
+export async function getAddressStats() {
+  return {
+    total_addresses: 100,
+    suspicious_addresses: 15,
+    avg_suspicion_score: 45.2,
+    avg_win_rate: 55.8,
+    total_volume: 8500000,
+    total_trades: 2450
+  };
+}

@@ -9,6 +9,7 @@ import Markets from "./pages/Markets";
 import MarketDetail from "./pages/MarketDetail";
 import Dashboard from "./pages/Dashboard";
 import WhaleTrades from "./pages/WhaleTrades";
+import AddressLeaderboard from "./pages/AddressLeaderboard";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path={"/market/:id"} component={MarketDetail} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/whale-trades"} component={WhaleTrades} />
+      <Route path={"/addresses"} component={AddressLeaderboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

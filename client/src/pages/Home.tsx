@@ -158,11 +158,16 @@ export default function Home() {
                 </Link>
               ))}
               
-              <div className="text-center pt-8">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
                 <Link href="/whale-trades">
                   <Button size="lg" className="neon-border">
                     查看所有大額交易
                     <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/addresses">
+                  <Button size="lg" variant="outline" className="border-pink-600 text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950">
+                    🕵️ 追蹤聰明錢
                   </Button>
                 </Link>
               </div>

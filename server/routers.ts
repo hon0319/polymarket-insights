@@ -139,6 +139,47 @@ export const appRouter = router({
       }),
   }),
 
+  // Addresses API (Public)
+  addresses: router({ list: publicProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      }).optional())
+      .query(async ({ input }) => {
+        return await db.getAddresses(input || {});
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAddressById(input.id);
+      }),
+
+    getLeaderboard: publicProcedure
+      .input(z.object({
+        metric: z.enum(['suspicion_score', 'win_rate', 'total_volume']).default('suspicion_score'),
+        limit: z.number().min(1).max(50).default(10),
+      }).optional())
+      .query(async ({ input }) => {
+        return await db.getAddressLeaderboard(input || {});
+      }),
+
+    getTrades: publicProcedure
+      .input(z.object({
+        addressId: z.number(),
+        limit: z.number().min(1).max(100).default(20),
+        offset: z.number().min(0).default(0),
+      }))
+      .query(async ({ input }) => {
+        const { addressId, ...params } = input;
+        return await db.getAddressTrades(addressId, params);
+      }),
+
+    getStats: publicProcedure.query(async () => {
+      return await db.getAddressStats();
+    }),
+  }),
+
   // Notifications API (Protected)
   notifications: router({
     list: protectedProcedure

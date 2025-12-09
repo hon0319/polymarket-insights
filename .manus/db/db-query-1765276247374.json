@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, address, total_volume, total_trades, avg_trade_size, win_rate, suspicion_score, first_seen_at FROM addresses ORDER BY total_volume DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT id, address, total_volume, total_trades, avg_trade_size, win_rate, suspicion_score, first_seen_at FROM addresses ORDER BY total_volume DESC LIMIT 10",
+  "rows": [
+    {
+      "id": "26",
+      "address": "0x4ce73141dbfce41e65db3723e31059a730f0abad",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:21"
+    },
+    {
+      "id": "25",
+      "address": "0xd235973291b2b75ff4070e9c0b01728c520b0f29",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:21"
+    },
+    {
+      "id": "24",
+      "address": "0x684bc3eb000bff0979d14b60cc74861736150601",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:20"
+    },
+    {
+      "id": "23",
+      "address": "0xf8ba34bf0e95d952d05b578bfbc0833f9242a286",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:18"
+    },
+    {
+      "id": "22",
+      "address": "0x9f47f1fcb1701bf9eaf31236ad39875e5d60af93",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:18"
+    },
+    {
+      "id": "21",
+      "address": "0x971f91a412236cc942a6f4485d3d88aa8dcb5929",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:16"
+    },
+    {
+      "id": "20",
+      "address": "0xa49becb692927d455924583b5e3e5788246f4c40",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:15"
+    },
+    {
+      "id": "19",
+      "address": "0xa1d75a199ef084ee3ec9ae60dc986b439fe6e17e",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:14"
+    },
+    {
+      "id": "18",
+      "address": "0x3d8a89a20aa73fba0f30d080e8120de9f9555724",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:14"
+    },
+    {
+      "id": "17",
+      "address": "0x31519628fb5e5aa559d4ba27aa1248810b9f0977",
+      "total_volume": "0.000000",
+      "total_trades": "0",
+      "avg_trade_size": "0.000000",
+      "win_rate": "NULL",
+      "suspicion_score": "0.00",
+      "first_seen_at": "2025-12-09 10:30:13"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\taddress\ttotal_volume\ttotal_trades\tavg_trade_size\twin_rate\tsuspicion_score\tfirst_seen_at\n26\t0x4ce73141dbfce41e65db3723e31059a730f0abad\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:21\n25\t0xd235973291b2b75ff4070e9c0b01728c520b0f29\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:21\n24\t0x684bc3eb000bff0979d14b60cc74861736150601\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:20\n23\t0xf8ba34bf0e95d952d05b578bfbc0833f9242a286\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:18\n22\t0x9f47f1fcb1701bf9eaf31236ad39875e5d60af93\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:18\n21\t0x971f91a412236cc942a6f4485d3d88aa8dcb5929\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:16\n20\t0xa49becb692927d455924583b5e3e5788246f4c40\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:15\n19\t0xa1d75a199ef084ee3ec9ae60dc986b439fe6e17e\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:14\n18\t0x3d8a89a20aa73fba0f30d080e8120de9f9555724\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:14\n17\t0x31519628fb5e5aa559d4ba27aa1248810b9f0977\t0.000000\t0\t0.000000\tNULL\t0.00\t2025-12-09 10:30:13\n",
+  "stderr": "",
+  "execution_time_ms": 1517
+}
