@@ -178,6 +178,35 @@ export const appRouter = router({
     getStats: publicProcedure.query(async () => {
       return await db.getAddressStats();
     }),
+
+    getTradeHistory: publicProcedure
+      .input(z.object({
+        addressId: z.number(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }))
+      .query(async ({ input }) => {
+        const { addressId, ...params } = input;
+        return await db.getAddressTradeHistory(addressId, params);
+      }),
+
+    getMarketPerformance: publicProcedure
+      .input(z.object({ addressId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAddressMarketPerformance(input.addressId);
+      }),
+
+    getWinRateTrend: publicProcedure
+      .input(z.object({ addressId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAddressWinRateTrend(input.addressId);
+      }),
+
+    getCategoryFocus: publicProcedure
+      .input(z.object({ addressId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAddressCategoryFocus(input.addressId);
+      }),
   }),
 
   // Notifications API (Protected)

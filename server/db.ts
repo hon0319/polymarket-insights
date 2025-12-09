@@ -476,3 +476,131 @@ export async function getAddressStats() {
     total_trades: 2450
   };
 }
+
+
+/**
+ * 獲取地址的交易歷史時間線（模擬數據）
+ */
+export async function getAddressTradeHistory(addressId: number, params: {
+  limit?: number;
+  offset?: number;
+}) {
+  const { limit = 50, offset = 0 } = params;
+  
+  // 模擬數據
+  const mockTrades = [
+    {
+      id: 1,
+      marketId: 1,
+      marketTitle: 'Will Trump win 2024 election?',
+      category: 'Politics',
+      side: 'YES',
+      amount: 15000,
+      price: 0.65,
+      timestamp: new Date('2024-12-08T10:30:00'),
+      outcome: 'pending',
+      profit: null
+    },
+    {
+      id: 2,
+      marketId: 2,
+      marketTitle: 'Bitcoin above $100k by end of 2024?',
+      category: 'Crypto',
+      side: 'NO',
+      amount: 8500,
+      price: 0.45,
+      timestamp: new Date('2024-12-07T15:20:00'),
+      outcome: 'won',
+      profit: 4675
+    },
+    {
+      id: 3,
+      marketId: 3,
+      marketTitle: 'Lakers win NBA championship 2025?',
+      category: 'Sports',
+      side: 'YES',
+      amount: 12000,
+      price: 0.30,
+      timestamp: new Date('2024-12-06T09:15:00'),
+      outcome: 'lost',
+      profit: -12000
+    }
+  ];
+  
+  return mockTrades.slice(offset, offset + limit);
+}
+
+/**
+ * 獲取地址的市場表現分析（按類別）（模擬數據）
+ */
+export async function getAddressMarketPerformance(addressId: number) {
+  // 模擬數據
+  return [
+    {
+      category: 'Politics',
+      total_trades: 85,
+      total_volume: 520000,
+      win_rate: 75.3,
+      avg_profit: 3200,
+      roi: 0.52
+    },
+    {
+      category: 'Crypto',
+      total_trades: 62,
+      total_volume: 380000,
+      win_rate: 71.0,
+      avg_profit: 2850,
+      roi: 0.47
+    },
+    {
+      category: 'Sports',
+      total_trades: 48,
+      total_volume: 290000,
+      win_rate: 68.8,
+      avg_profit: 2100,
+      roi: 0.35
+    },
+    {
+      category: 'Other',
+      total_trades: 50,
+      total_volume: 310000,
+      win_rate: 66.0,
+      avg_profit: 1950,
+      roi: 0.31
+    }
+  ];
+}
+
+/**
+ * 獲取地址的勝率趨勢數據（模擬數據）
+ */
+export async function getAddressWinRateTrend(addressId: number) {
+  // 模擬數據 - 過去 12 個月的勝率趨勢
+  return [
+    { month: '2024-01', win_rate: 65.0, trades: 18 },
+    { month: '2024-02', win_rate: 68.5, trades: 22 },
+    { month: '2024-03', win_rate: 70.2, trades: 25 },
+    { month: '2024-04', win_rate: 72.8, trades: 28 },
+    { month: '2024-05', win_rate: 71.5, trades: 24 },
+    { month: '2024-06', win_rate: 73.9, trades: 30 },
+    { month: '2024-07', win_rate: 75.1, trades: 32 },
+    { month: '2024-08', win_rate: 74.3, trades: 29 },
+    { month: '2024-09', win_rate: 76.2, trades: 35 },
+    { month: '2024-10', win_rate: 75.8, trades: 33 },
+    { month: '2024-11', win_rate: 74.5, trades: 31 },
+    { month: '2024-12', win_rate: 72.5, trades: 18 }
+  ];
+}
+
+/**
+ * 獲取地址的市場類別專注度（模擬數據）
+ */
+export async function getAddressCategoryFocus(addressId: number) {
+  // 模擬數據
+  return [
+    { category: 'Politics', percentage: 34.7, trades: 85 },
+    { category: 'Crypto', percentage: 25.3, trades: 62 },
+    { category: 'Sports', percentage: 19.6, trades: 48 },
+    { category: 'Other', percentage: 20.4, trades: 50 }
+  ];
+}

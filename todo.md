@@ -235,3 +235,65 @@
 - [x] 測試 API 端點響應（使用模擬數據）
 - [x] 測試前端數據展示（排行榜頁面完美顯示）
 - [x] 端到端測試（從 Subgraph 到前端）
+
+## Phase 2: 地址詳情頁面、完善可疑度算法、實時警報功能（2024-12-09）
+
+### 地址詳情頁面 API
+- [x] 在 server/db.ts 添加地址詳情相關的查詢函數
+- [x] 在 server/routers.ts 添加 addresses.getTradeHistory API
+- [x] 在 server/routers.ts 添加 addresses.getMarketPerformance API
+- [x] 在 server/routers.ts 添加 addresses.getWinRateTrend API
+- [x] 在 server/routers.ts 添加 addresses.getCategoryFocus API
+- [x] 使用模擬數據快速驗證 API 功能
+- [ ] 編寫 API 單元測試（待後續完善）
+
+### 地址詳情頁面前端
+- [x] 創建 AddressDetail.tsx 頁面組件
+- [x] 實作地址基本資訊卡片（地址、可疑度、勝率、交易統計）
+- [x] 實作交易歷史時間線組件
+- [x] 實作市場表現分析表格（按類別）
+- [x] 實作勝率趨勢圖表（使用 Recharts LineChart）
+- [x] 實作市場專注度分析圖表（使用 Recharts PieChart）
+- [x] 添加路由配置到 App.tsx
+- [x] 測試從排行榜點擊跳轉到詳情頁（成功）
+
+### 完善可疑度算法
+- [ ] 實作早期交易檢測算法（detect_early_trades）
+- [ ] 實作時機精準度分析（calculate_timing_precision）
+- [ ] 更新 calculate_suspicion_score 方法（整合所有維度）
+- [ ] 實作 calculate_early_trading_score 方法（25 分）
+- [ ] 實作 calculate_timing_score 方法（15 分）
+- [ ] 實作 calculate_selectivity_score 方法（10 分）
+- [ ] 重新計算所有地址的可疑度分數
+- [ ] 驗證新算法的準確性
+
+### 警報訂閱系統
+- [ ] 設計 address_subscriptions 表（用戶訂閱地址）
+- [ ] 設計 address_alerts 表（警報記錄）
+- [ ] 執行資料庫遷移
+- [ ] 實作 subscribeToAddress API
+- [ ] 實作 unsubscribeFromAddress API
+- [ ] 實作 getMySubscriptions API
+- [ ] 實作 getAddressAlerts API
+
+### 警報觸發邏輯
+- [ ] 在 Python 後端添加警報檢測邏輯
+- [ ] 當訂閱的地址下注時觸發警報
+- [ ] 將警報記錄保存到 address_alerts 表
+- [ ] 調用通知系統發送警報
+- [ ] 測試警報觸發流程
+
+### 前端訂閱管理界面
+- [ ] 在地址詳情頁添加「訂閱」按鈕
+- [ ] 實作訂閱狀態顯示
+- [ ] 創建「我的訂閱」頁面
+- [ ] 實作訂閱列表展示
+- [ ] 實作取消訂閱功能
+- [ ] 實作警報歷史查看
+
+### 測試和驗證
+- [ ] 測試地址詳情頁面數據展示
+- [ ] 驗證可疑度分數計算準確性
+- [ ] 測試警報訂閱流程
+- [ ] 測試警報觸發和通知
+- [ ] 端到端測試
