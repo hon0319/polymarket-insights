@@ -1,0 +1,16 @@
+{
+  "query": "SELECT DISTINCT m.id, m.title, COUNT(DISTINCT p.id) as prediction_count, COUNT(DISTINCT t.id) as trade_count\nFROM markets m \nLEFT JOIN predictions p ON m.id = p.marketId \nLEFT JOIN trades t ON m.id = t.marketId \nWHERE p.id IS NOT NULL\nGROUP BY m.id, m.title \nORDER BY prediction_count DESC, trade_count DESC\nLIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT DISTINCT m.id, m.title, COUNT(DISTINCT p.id) as prediction_count, COUNT(DISTINCT t.id) as trade_count\nFROM markets m \nLEFT JOIN predictions p ON m.id = p.marketId \nLEFT JOIN trades t ON m.id = t.marketId \nWHERE p.id IS NOT NULL\nGROUP BY m.id, m.title \nORDER BY prediction_count DESC, trade_count DESC\nLIMIT 1;",
+  "rows": [
+    {
+      "id": "143",
+      "title": "Bitcoin Up or Down - December 9, 4:15AM-4:30AM ET",
+      "prediction_count": "6",
+      "trade_count": "56"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tprediction_count\ttrade_count\n143\tBitcoin Up or Down - December 9, 4:15AM-4:30AM ET\t6\t56\n",
+  "stderr": "",
+  "execution_time_ms": 1673
+}

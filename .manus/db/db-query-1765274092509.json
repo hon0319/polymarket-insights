@@ -1,0 +1,45 @@
+{
+  "query": "SELECT p.marketId, p.aiModel, p.prediction, p.confidence, m.title\nFROM predictions p\nLEFT JOIN markets m ON p.marketId = m.id\nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT p.marketId, p.aiModel, p.prediction, p.confidence, m.title\nFROM predictions p\nLEFT JOIN markets m ON p.marketId = m.id\nLIMIT 5;",
+  "rows": [
+    {
+      "marketId": "30040",
+      "aiModel": "anthropic/claude-3.5-haiku",
+      "prediction": "NO",
+      "confidence": "85",
+      "title": "Will the Indiana Pacers win the 2026 NBA Finals?"
+    },
+    {
+      "marketId": "30040",
+      "aiModel": "openai/gpt-4o-mini",
+      "prediction": "NO",
+      "confidence": "75",
+      "title": "Will the Indiana Pacers win the 2026 NBA Finals?"
+    },
+    {
+      "marketId": "30047",
+      "aiModel": "anthropic/claude-3.5-haiku",
+      "prediction": "NO",
+      "confidence": "75",
+      "title": "Will the Minnesota Timberwolves win the 2026 NBA Finals?"
+    },
+    {
+      "marketId": "30047",
+      "aiModel": "openai/gpt-4o-mini",
+      "prediction": "NO",
+      "confidence": "75",
+      "title": "Will the Minnesota Timberwolves win the 2026 NBA Finals?"
+    },
+    {
+      "marketId": "30134",
+      "aiModel": "openai/gpt-4o-mini",
+      "prediction": "YES",
+      "confidence": "65",
+      "title": "Ethereum Up or Down - December 9, 5:00AM-5:15AM ET"
+    }
+  ],
+  "messages": [],
+  "stdout": "marketId\taiModel\tprediction\tconfidence\ttitle\n30040\tanthropic/claude-3.5-haiku\tNO\t85\tWill the Indiana Pacers win the 2026 NBA Finals?\n30040\topenai/gpt-4o-mini\tNO\t75\tWill the Indiana Pacers win the 2026 NBA Finals?\n30047\tanthropic/claude-3.5-haiku\tNO\t75\tWill the Minnesota Timberwolves win the 2026 NBA Finals?\n30047\topenai/gpt-4o-mini\tNO\t75\tWill the Minnesota Timberwolves win the 2026 NBA Finals?\n30134\topenai/gpt-4o-mini\tYES\t65\tEthereum Up or Down - December 9, 5:00AM-5:15AM ET\n",
+  "stderr": "",
+  "execution_time_ms": 1477
+}

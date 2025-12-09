@@ -97,10 +97,10 @@ export default function Home() {
           ) : whaleTrades && whaleTrades.length > 0 ? (
             <div className="space-y-4 max-w-4xl mx-auto">
               {whaleTrades.slice(0, 5).map((trade) => (
-                <Card 
-                  key={trade.id} 
-                  className="p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group"
-                >
+                <Link key={trade.id} href={`/market/${trade.marketId}`}>
+                  <Card 
+                    className="p-6 bg-card/50 backdrop-blur-sm border-border hover:border-primary/50 transition-all duration-300 group cursor-pointer hover:scale-[1.01] hover:shadow-lg hover:shadow-primary/10"
+                  >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -154,7 +154,8 @@ export default function Home() {
                       )}
                     </div>
                   </div>
-                </Card>
+                  </Card>
+                </Link>
               ))}
               
               <div className="text-center pt-8">

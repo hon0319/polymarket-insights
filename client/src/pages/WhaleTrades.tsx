@@ -224,10 +224,10 @@ export default function WhaleTrades() {
           {!isLoading && filteredTrades && filteredTrades.length > 0 && (
             <>
               {filteredTrades.map((trade) => (
-                <Card
-                  key={trade.id}
-                  className="bg-gradient-to-r from-[#0f1535]/80 to-[#1a1f3a]/80 border-cyan-500/20 hover:border-cyan-500/40 transition-all p-6"
-                >
+                <Link key={trade.id} href={`/market/${trade.marketId}`}>
+                  <Card
+                    className="bg-gradient-to-r from-[#0f1535]/80 to-[#1a1f3a]/80 border-cyan-500/20 hover:border-cyan-500/40 transition-all p-6 cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/20"
+                  >
                   <div className="flex items-start justify-between gap-6">
                     {/* 左側：市場信息 */}
                     <div className="flex-1">
@@ -327,7 +327,8 @@ export default function WhaleTrades() {
                       )}
                     </div>
                   </div>
-                </Card>
+                  </Card>
+                </Link>
               ))}
             </>
           )}

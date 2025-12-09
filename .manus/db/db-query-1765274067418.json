@@ -1,0 +1,28 @@
+{
+  "query": "SELECT m.id, m.title, m.conditionId, COUNT(p.id) as pred_count\nFROM predictions p\nINNER JOIN markets m ON p.marketId = m.id\nGROUP BY m.id, m.title, m.conditionId\nORDER BY pred_count DESC\nLIMIT 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT m.id, m.title, m.conditionId, COUNT(p.id) as pred_count\nFROM predictions p\nINNER JOIN markets m ON p.marketId = m.id\nGROUP BY m.id, m.title, m.conditionId\nORDER BY pred_count DESC\nLIMIT 3;",
+  "rows": [
+    {
+      "id": "143",
+      "title": "Bitcoin Up or Down - December 9, 4:15AM-4:30AM ET",
+      "conditionId": "0x6f42f2cfb375dafd9e45f4e3125c97c12721e5b418410967d0a78d8ef9a63993",
+      "pred_count": "6"
+    },
+    {
+      "id": "75",
+      "title": "Trump declassifies UFO files in 2025?",
+      "conditionId": "0x2865bc483dd523f4a36eb961f7467c8635ee9a13f39748bad55f645ce1f61512",
+      "pred_count": "3"
+    },
+    {
+      "id": "30335",
+      "title": "Will Byron Donalds win the 2028 Republican presidential nomination?",
+      "conditionId": "0xd1747284d6048b2a3dcfbee489db405f36de18f9590197dd0e5c9f0c246bf050",
+      "pred_count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tconditionId\tpred_count\n143\tBitcoin Up or Down - December 9, 4:15AM-4:30AM ET\t0x6f42f2cfb375dafd9e45f4e3125c97c12721e5b418410967d0a78d8ef9a63993\t6\n75\tTrump declassifies UFO files in 2025?\t0x2865bc483dd523f4a36eb961f7467c8635ee9a13f39748bad55f645ce1f61512\t3\n30335\tWill Byron Donalds win the 2028 Republican presidential nomination?\t0xd1747284d6048b2a3dcfbee489db405f36de18f9590197dd0e5c9f0c246bf050\t2\n",
+  "stderr": "",
+  "execution_time_ms": 1594
+}
