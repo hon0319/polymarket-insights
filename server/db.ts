@@ -1,11 +1,31 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, 
+  users, 
+  markets, 
+  predictions, 
+  trades, 
+  subscriptions, 
+  alerts, 
+  notifications,
+  type Market,
+  type InsertMarket,
+  type Prediction,
+  type InsertPrediction,
+  type Trade,
+  type InsertTrade,
+  type Subscription,
+  type InsertSubscription,
+  type Alert,
+  type InsertAlert,
+  type Notification,
+  type InsertNotification
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -17,6 +37,8 @@ export async function getDb() {
   }
   return _db;
 }
+
+// ============ User Operations ============
 
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
@@ -35,7 +57,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "loginMethod", "stripeCustomerId"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -59,6 +81,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = 'admin';
       updateSet.role = 'admin';
     }
+    if (user.subscriptionTier !== undefined) {
+      values.subscriptionTier = user.subscriptionTier;
+      updateSet.subscriptionTier = user.subscriptionTier;
+    }
 
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
@@ -79,14 +105,231 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
+  if (!db) return undefined;
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ Market Operations ============
+
+export async function upsertMarket(market: InsertMarket) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(markets).values(market).onDuplicateKeyUpdate({
+    set: {
+      title: market.title,
+      question: market.question,
+      description: market.description,
+      currentPrice: market.currentPrice,
+      volume24h: market.volume24h,
+      totalVolume: market.totalVolume,
+      lastTradeTimestamp: market.lastTradeTimestamp,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function getMarkets(filters?: {
+  category?: string;
+  country?: string;
+  isActive?: boolean;
+  limit?: number;
+  offset?: number;
+}) {
+  const db = await getDb();
+  if (!db) return [];
+
+  let query = db.select().from(markets);
+
+  const conditions = [];
+  if (filters?.category) {
+    conditions.push(eq(markets.category, filters.category));
+  }
+  if (filters?.country) {
+    conditions.push(eq(markets.country, filters.country));
+  }
+  if (filters?.isActive !== undefined) {
+    conditions.push(eq(markets.isActive, filters.isActive));
+  }
+
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as any;
+  }
+
+  query = query.orderBy(desc(markets.volume24h)) as any;
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit) as any;
+  }
+  if (filters?.offset) {
+    query = query.offset(filters.offset) as any;
+  }
+
+  return await query;
+}
+
+export async function getMarketById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(markets).where(eq(markets.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getMarketByConditionId(conditionId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(markets).where(eq(markets.conditionId, conditionId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ Prediction Operations ============
+
+export async function createPrediction(prediction: InsertPrediction) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(predictions).values(prediction);
+}
+
+export async function getPredictionsByMarketId(marketId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(predictions).where(eq(predictions.marketId, marketId)).orderBy(desc(predictions.createdAt));
+}
+
+export async function getLatestPredictionByMarketId(marketId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(predictions).where(eq(predictions.marketId, marketId)).orderBy(desc(predictions.createdAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ Trade Operations ============
+
+export async function createTrade(trade: InsertTrade) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(trades).values(trade);
+}
+
+export async function getTradesByMarketId(marketId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(trades).where(eq(trades.marketId, marketId)).orderBy(desc(trades.timestamp)).limit(limit);
+}
+
+export async function getWhaleTrades(limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(trades).where(eq(trades.isWhale, true)).orderBy(desc(trades.timestamp)).limit(limit);
+}
+
+// ============ Subscription Operations ============
+
+export async function createSubscription(subscription: InsertSubscription) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(subscriptions).values(subscription);
+}
+
+export async function updateSubscription(stripeSubscriptionId: string, updates: Partial<InsertSubscription>) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(subscriptions).set(updates).where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
+}
+
+export async function getSubscriptionByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).orderBy(desc(subscriptions.createdAt)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getSubscriptionByStripeId(stripeSubscriptionId: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// ============ Alert Operations ============
+
+export async function createAlert(alert: InsertAlert) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(alerts).values(alert);
+}
+
+export async function getAlertsByUserId(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(alerts).where(eq(alerts.userId, userId)).orderBy(desc(alerts.createdAt));
+}
+
+export async function updateAlert(id: number, updates: Partial<InsertAlert>) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(alerts).set(updates).where(eq(alerts.id, id));
+}
+
+export async function deleteAlert(id: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.delete(alerts).where(eq(alerts.id, id));
+}
+
+// ============ Notification Operations ============
+
+export async function createNotification(notification: InsertNotification) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.insert(notifications).values(notification);
+}
+
+export async function getNotificationsByUserId(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)).limit(limit);
+}
+
+export async function markNotificationAsRead(id: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+}
+
+export async function getUnreadNotificationCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: sql<number>`count(*)` }).from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+  return result[0]?.count ?? 0;
+}
