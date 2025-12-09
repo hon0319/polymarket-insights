@@ -67,3 +67,10 @@
 - [x] 實作 WebSocket 實時數據推送到前端
 - [x] 實作大額交易檢測和警報
 - [ ] 測試數據流完整性
+
+
+## OpenRouter API 整合
+- [x] 修改 model_factory.py 支援 OpenRouter API
+- [x] 更新配置文件使用 OPENROUTER_API_KEY
+- [ ] 測試 OpenRouter 模型調用
+- [x] 更新文檔說明 OpenRouter 配置

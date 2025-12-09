@@ -51,10 +51,8 @@ OAUTH_SERVER_URL=auto_configured
 VITE_APP_ID=auto_configured
 # ... 其他 Manus 相關變數
 
-# AI API Keys (需要手動添加)
-OPENAI_API_KEY=your_openai_api_key
-ANTHROPIC_API_KEY=your_anthropic_api_key
-GOOGLE_API_KEY=your_google_api_key
+# OpenRouter API Key (需要手動添加)
+OPENROUTER_API_KEY=sk-or-v1-your-api-key-here
 
 # Python WebSocket Server
 WS_SERVER_HOST=localhost
@@ -118,10 +116,11 @@ Python 服務將在 `ws://localhost:8765` 啟動 WebSocket 服務器。
 
 ### 2. AI 共識預測
 
-- **模型**：
+- **模型**（通過 OpenRouter API）：
   - GPT-4o-mini (OpenAI)
   - Claude 3.5 Haiku (Anthropic)
   - Gemini 2.0 Flash (Google)
+  - 以及 OpenRouter 支援的所有其他模型
 
 - **預測流程**：
   1. 三個模型並行分析市場
@@ -352,14 +351,14 @@ Python 後端使用 `termcolor` 輸出彩色日誌：
 
 ### AI 預測不工作
 
-1. 驗證 API Keys 有效：
+1. 驗證 OpenRouter API Key 有效：
    ```bash
-   echo $OPENAI_API_KEY
-   echo $ANTHROPIC_API_KEY
-   echo $GOOGLE_API_KEY
+   echo $OPENROUTER_API_KEY
    ```
 
-2. 檢查 API 配額和限制
+2. 檢查 OpenRouter 餘額和配額：
+   - 訪問 https://openrouter.ai/activity
+   - 查看使用情況和餘額
 
 3. 查看 Python 後端日誌中的錯誤信息
 
