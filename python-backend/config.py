@@ -21,7 +21,7 @@ USE_SWARM_MODE = os.getenv("USE_SWARM_MODE", "true").lower() == "true"
 SWARM_MODELS = [
     "openai/gpt-4o-mini",              # OpenAI GPT-4o Mini
     "anthropic/claude-3.5-haiku",      # Anthropic Claude 3.5 Haiku
-    "google/gemini-2.0-flash-exp"      # Google Gemini 2.0 Flash
+    "google/gemini-2.0-flash-exp:free" # Google Gemini 2.0 Flash (Free)
 ]
 
 # 單一模型（當 USE_SWARM_MODE = False 時使用）

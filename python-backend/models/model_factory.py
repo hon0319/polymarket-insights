@@ -288,7 +288,7 @@ class SingleModelAgent:
 DEFAULT_SWARM_MODELS = [
     "openai/gpt-4o-mini",
     "anthropic/claude-3.5-haiku",
-    "google/gemini-2.0-flash-exp"
+    "google/gemini-2.0-flash-exp:free"
 ]
 
 DEFAULT_SINGLE_MODEL = "openai/gpt-4o-mini"

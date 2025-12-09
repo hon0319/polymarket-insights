@@ -72,5 +72,14 @@
 ## OpenRouter API 整合
 - [x] 修改 model_factory.py 支援 OpenRouter API
 - [x] 更新配置文件使用 OPENROUTER_API_KEY
-- [ ] 測試 OpenRouter 模型調用
+- [x] 測試 OpenRouter 模型調用
 - [x] 更新文檔說明 OpenRouter 配置
+
+
+## Python 後端啟動和測試
+- [x] 配置 OPENROUTER_API_KEY 環境變數
+- [x] 安裝 Python 依賴
+- [x] 啟動 Python 後端服務
+- [x] 測試 WebSocket 連接
+- [ ] 測試實時數據推送
+- [ ] 驗證 AI 預測功能
