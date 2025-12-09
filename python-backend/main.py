@@ -1,0 +1,165 @@
+"""
+Polymarket Insights - Python Backend Service
+實時數據收集、AI 分析和 WebSocket 服務器
+"""
+import asyncio
+import json
+import mysql.connector
+from datetime import datetime
+from termcolor import cprint
+import websockets
+
+from config import *
+from agents.polymarket_agent import PolymarketAgent
+
+
+class PolymarketBackendService:
+    """Python 後端服務主類"""
+    
+    def __init__(self):
+        self.db_connection = None
+        self.agent = None
+        self.ws_server = None
+        
+        cprint("=" * 60, "cyan")
+        cprint("🌙 Polymarket Insights - Python Backend Service", "cyan", attrs=['bold'])
+        cprint("=" * 60, "cyan")
+    
+    def connect_database(self):
+        """連接到資料庫"""
+        try:
+            # Parse DATABASE_URL
+            # Format: mysql://user:password@host:port/database
+            if not DATABASE_URL:
+                raise ValueError("DATABASE_URL not set in environment")
+            
+            # Simple parsing (you might want to use urllib.parse for production)
+            url_parts = DATABASE_URL.replace("mysql://", "").split("@")
+            user_pass = url_parts[0].split(":")
+            host_db = url_parts[1].split("/")
+            host_port = host_db[0].split(":")
+            
+            self.db_connection = mysql.connector.connect(
+                host=host_port[0],
+                port=int(host_port[1]) if len(host_port) > 1 else 3306,
+                user=user_pass[0],
+                password=user_pass[1],
+                database=host_db[1].split("?")[0]  # Remove query params
+            )
+            
+            cprint("✅ Database connected successfully", "green")
+            return True
+            
+        except Exception as e:
+            cprint(f"❌ Database connection failed: {e}", "red")
+            return False
+    
+    def initialize_agent(self):
+        """初始化 Polymarket Agent"""
+        try:
+            self.agent = PolymarketAgent(self.db_connection)
+            cprint("✅ Polymarket Agent initialized", "green")
+            return True
+        except Exception as e:
+            cprint(f"❌ Agent initialization failed: {e}", "red")
+            return False
+    
+    async def websocket_handler(self, websocket, path):
+        """處理 WebSocket 連接（前端客戶端）"""
+        cprint(f"🔌 New WebSocket connection from {websocket.remote_address}", "cyan")
+        
+        # Add client to agent's client list
+        self.agent.add_ws_client(websocket)
+        
+        try:
+            # Send welcome message
+            await websocket.send(json.dumps({
+                "type": "connected",
+                "message": "Connected to Polymarket Insights Backend",
+                "timestamp": datetime.now().isoformat()
+            }))
+            
+            # Keep connection alive and handle incoming messages
+            async for message in websocket:
+                try:
+                    data = json.loads(message)
+                    await self.handle_client_message(websocket, data)
+                except json.JSONDecodeError:
+                    cprint(f"⚠️ Invalid JSON from client: {message}", "yellow")
+                    
+        except websockets.exceptions.ConnectionClosed:
+            cprint(f"⚠️ Client disconnected: {websocket.remote_address}", "yellow")
+        finally:
+            self.agent.remove_ws_client(websocket)
+    
+    async def handle_client_message(self, websocket, data: dict):
+        """處理來自前端的消息"""
+        msg_type = data.get("type")
+        
+        if msg_type == "ping":
+            await websocket.send(json.dumps({"type": "pong"}))
+        
+        elif msg_type == "subscribe_market":
+            market_id = data.get("market_id")
+            cprint(f"📡 Client subscribed to market {market_id}", "cyan")
+            # TODO: Implement market-specific subscriptions
+        
+        elif msg_type == "request_analysis":
+            market_id = data.get("market_id")
+            cprint(f"🧠 AI analysis requested for market {market_id}", "cyan")
+            # TODO: Trigger AI analysis and send result
+    
+    async def start_websocket_server(self):
+        """啟動 WebSocket 服務器"""
+        try:
+            self.ws_server = await websockets.serve(
+                self.websocket_handler,
+                WS_SERVER_HOST,
+                WS_SERVER_PORT
+            )
+            cprint(f"✅ WebSocket server started on {WS_SERVER_HOST}:{WS_SERVER_PORT}", "green", attrs=['bold'])
+            
+            # Keep server running
+            await asyncio.Future()  # Run forever
+            
+        except Exception as e:
+            cprint(f"❌ WebSocket server failed: {e}", "red")
+    
+    def start(self):
+        """啟動服務"""
+        cprint("\n🚀 Starting Polymarket Insights Backend...\n", "green", attrs=['bold'])
+        
+        # 1. Connect to database
+        if not self.connect_database():
+            cprint("❌ Failed to start: Database connection error", "red")
+            return
+        
+        # 2. Initialize agent
+        if not self.initialize_agent():
+            cprint("❌ Failed to start: Agent initialization error", "red")
+            return
+        
+        # 3. Connect to Polymarket WebSocket
+        cprint("\n📡 Connecting to Polymarket WebSocket...", "cyan")
+        self.agent.connect_websocket()
+        
+        # 4. Start WebSocket server for frontend
+        cprint("\n🌐 Starting WebSocket server for frontend...", "cyan")
+        try:
+            asyncio.run(self.start_websocket_server())
+        except KeyboardInterrupt:
+            cprint("\n\n⚠️ Shutting down gracefully...", "yellow")
+            self.shutdown()
+    
+    def shutdown(self):
+        """關閉服務"""
+        cprint("🛑 Closing database connection...", "yellow")
+        if self.db_connection:
+            self.db_connection.close()
+        
+        cprint("👋 Goodbye!", "cyan")
+
+
+if __name__ == "__main__":
+    service = PolymarketBackendService()
+    service.start()
