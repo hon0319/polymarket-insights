@@ -6,7 +6,7 @@ import asyncio
 import json
 import mysql.connector
 from datetime import datetime
-from termcolor import cprint
+from termcolor import cprint, colored
 import websockets
 
 from config import *
@@ -57,19 +57,70 @@ class PolymarketBackendService:
     def initialize_agent(self):
         """初始化 Polymarket Agent"""
         try:
-            self.agent = PolymarketAgent(self.db_connection)
-            cprint("✅ Polymarket Agent initialized", "green")
+            # 創建 PolymarketAgent 實例
+            self.agent = PolymarketAgent(
+                on_message=self.on_polymarket_message,
+                on_trade=self.on_polymarket_trade,
+                on_error=self.on_polymarket_error
+            )
+            
+            # 添加訂閱
+            self.agent.subscribe_to_trades()
+            self.agent.subscribe_to_comments()
+            # self.agent.subscribe_to_crypto_prices()  # 可選
+            
+            cprint("🤖 Polymarket Agent initialized", "green")
+            cprint(f"   Subscriptions: {len(self.agent.subscriptions)}", "cyan")
+            
             return True
         except Exception as e:
             cprint(f"❌ Agent initialization failed: {e}", "red")
             return False
+    
+    def on_polymarket_message(self, data: dict):
+        """處理 Polymarket 消息"""
+        topic = data.get("topic", "unknown")
+        msg_type = data.get("type", "unknown")
+        # cprint(f"📨 Polymarket Message: {topic}/{msg_type}", "cyan")
+        
+        # 廣播到前端客戶端（使用線程安全的方式）
+        if hasattr(self, '_event_loop') and self._event_loop:
+            asyncio.run_coroutine_threadsafe(
+                self.broadcast_to_clients({
+                    "type": "polymarket_message",
+                    "data": data,
+                    "timestamp": datetime.now().isoformat()
+                }),
+                self._event_loop
+            )
+    
+    def on_polymarket_trade(self, data: dict):
+        """處理 Polymarket 交易數據"""
+        payload = data.get("payload", {})
+        cprint(f"💰 Trade: {payload}", "magenta")
+        
+        # 廣播到前端客戶端（使用線程安全的方式）
+        if hasattr(self, '_event_loop') and self._event_loop:
+            asyncio.run_coroutine_threadsafe(
+                self.broadcast_to_clients({
+                    "type": "trade",
+                    "data": data,
+                    "timestamp": datetime.now().isoformat()
+                }),
+                self._event_loop
+            )
+    
+    def on_polymarket_error(self, error: Exception):
+        """處理 Polymarket 錯誤"""
+        cprint(f"❌ Polymarket Error: {error}", "red")
     
     async def websocket_handler(self, websocket, path):
         """處理 WebSocket 連接（前端客戶端）"""
         cprint(f"🔌 New WebSocket connection from {websocket.remote_address}", "cyan")
         
         # Add client to agent's client list
-        self.agent.add_ws_client(websocket)
+        if self.agent:
+            self.agent.add_ws_client(websocket)
         
         try:
             # Send welcome message
@@ -90,7 +141,8 @@ class PolymarketBackendService:
         except websockets.exceptions.ConnectionClosed:
             cprint(f"⚠️ Client disconnected: {websocket.remote_address}", "yellow")
         finally:
-            self.agent.remove_ws_client(websocket)
+            if self.agent:
+                self.agent.remove_ws_client(websocket)
     
     async def handle_client_message(self, websocket, data: dict):
         """處理來自前端的消息"""
@@ -109,9 +161,29 @@ class PolymarketBackendService:
             cprint(f"🧠 AI analysis requested for market {market_id}", "cyan")
             # TODO: Trigger AI analysis and send result
     
+    async def broadcast_to_clients(self, message: dict):
+        """向所有連接的前端客戶端廣播消息"""
+        if not self.agent or not self.agent.ws_clients:
+            return
+        
+        disconnected_clients = set()
+        message_json = json.dumps(message)
+        
+        for client in self.agent.ws_clients:
+            try:
+                await client.send(message_json)
+            except Exception:
+                disconnected_clients.add(client)
+        
+        # Remove disconnected clients
+        self.agent.ws_clients -= disconnected_clients
+    
     async def start_websocket_server(self):
         """啟動 WebSocket 服務器"""
         try:
+            # 保存 event loop 以便從其他線程調用
+            self._event_loop = asyncio.get_running_loop()
+            
             self.ws_server = await websockets.serve(
                 self.websocket_handler,
                 WS_SERVER_HOST,
@@ -139,9 +211,9 @@ class PolymarketBackendService:
             cprint("❌ Failed to start: Agent initialization error", "red")
             return
         
-        # 3. Connect to Polymarket WebSocket
-        cprint("\n📡 Connecting to Polymarket WebSocket...", "cyan")
-        self.agent.connect_websocket()
+        # 3. Start Polymarket Agent
+        cprint("\n📡 Connecting to Polymarket RTDS...", "cyan")
+        self.agent.start()
         
         # 4. Start WebSocket server for frontend
         cprint("\n🌐 Starting WebSocket server for frontend...", "cyan")
@@ -153,6 +225,10 @@ class PolymarketBackendService:
     
     def shutdown(self):
         """關閉服務"""
+        cprint("🛑 Stopping Polymarket Agent...", "yellow")
+        if self.agent:
+            self.agent.stop()
+        
         cprint("🛑 Closing database connection...", "yellow")
         if self.db_connection:
             self.db_connection.close()
