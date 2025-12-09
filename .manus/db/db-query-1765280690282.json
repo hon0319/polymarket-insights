@@ -1,0 +1,106 @@
+{
+  "query": "DESCRIBE address_trades",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute DESCRIBE address_trades",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "address_id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "market_id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "tx_hash",
+      "Type": "varchar(66)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "trade_type",
+      "Type": "enum('split','merge','redemption')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "amount",
+      "Type": "decimal(20,6)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "price",
+      "Type": "decimal(10,6)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "side",
+      "Type": "enum('buy','sell','redeem')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "timestamp",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "market_price_at_time",
+      "Type": "decimal(10,6)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "is_whale",
+      "Type": "tinyint(1)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "created_at",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\naddress_id\tint(11)\tNO\tMUL\tNULL\t\nmarket_id\tint(11)\tNO\tMUL\tNULL\t\ntx_hash\tvarchar(66)\tNO\tUNI\tNULL\t\ntrade_type\tenum('split','merge','redemption')\tNO\t\tNULL\t\namount\tdecimal(20,6)\tNO\t\tNULL\t\nprice\tdecimal(10,6)\tYES\t\tNULL\t\nside\tenum('buy','sell','redeem')\tNO\t\tNULL\t\ntimestamp\ttimestamp\tNO\t\tNULL\t\nmarket_price_at_time\tdecimal(10,6)\tYES\t\tNULL\t\nis_whale\ttinyint(1)\tYES\tMUL\t0\t\ncreated_at\ttimestamp\tYES\t\tCURRENT_TIMESTAMP\t\n",
+  "stderr": "",
+  "execution_time_ms": 1728
+}

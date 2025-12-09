@@ -1,0 +1,13 @@
+{
+  "query": "SHOW TABLES LIKE 'addresses'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SHOW TABLES LIKE 'addresses'",
+  "rows": [
+    {
+      "Tables_in_4sa6kfx5mFXsBhiWnpTsNp (addresses)": "addresses"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_4sa6kfx5mFXsBhiWnpTsNp (addresses)\naddresses\n",
+  "stderr": "",
+  "execution_time_ms": 2031
+}

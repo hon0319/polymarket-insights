@@ -346,3 +346,57 @@
 - [x] 更新地址詳情頁面顯示新的可疑度分數維度
 - [x] 添加可疑度分數詳細分解（各維度的得分）
 - [ ] 更新排行榜頁面的可疑度分數說明
+
+## Phase 4: 完善可疑度算法 - 真實數據同步和高級分析（2024-12-09）
+
+### 市場歷史價格數據同步
+- [x] 設計 market_price_history 表（記錄市場的歷史價格數據）
+- [x] 執行資料庫遷移
+- [x] 創建 price_sync_service.py 服務
+- [x] 實作 sync_market_price_history 方法（從 trades 表提取價格數據）
+- [x] 測試價格數據同步功能
+
+### 詳細交易數據同步
+- [x] address_trades 表已存在
+- [ ] 從 Polymarket Subgraph 同步詳細交易記錄（需要大量時間）
+- [ ] 測試交易數據同步功能
+
+### 價格變動檢測算法
+- [x] 創建 price_movement_detector.py 服務
+- [x] 實作 detect_price_movements 方法
+- [x] 實作算法檢測市場價格的大幅變動（>20%）
+- [x] 計算價格變動的時間點和幅度
+- [x] 將價格變動數據保存到 market_anomalies 表
+- [x] 測試價格變動檢測功能
+
+### 早期交易檢測算法
+- [x] 更新 address_analyzer.py 中的 _calculate_early_trading_score 方法
+- [x] 嘗試使用 address_trades 表數據（但發現數據不足）
+- [ ] 從 Polymarket Subgraph 同步詳細交易記錄（需要大量時間）
+- [x] 保留基於統計數據的算法版本
+
+### 時機精準度分析算法
+- [x] 更新 address_analyzer.py 中的 _calculate_timing_score 方法
+- [x] 嘗試使用 address_trades 表數據（但發現數據不足）
+- [x] 保留基於統計數據的算法版本
+
+### 選擇性參與分析算法
+- [x] 更新 address_analyzer.py 中的 _calculate_selectivity_score 方法
+- [x] 嘗試使用 address_trades 表數據（但發現數據不足）
+- [x] 保留基於統計數據的算法版本
+
+### 更新可疑度分數計算邏輯
+- [x] calculate_suspicion_score 方法已整合所有維度
+- [x] 使用基於統計數據的算法（勝率、交易量、交易次數）
+- [ ] 等待同步詳細交易記錄後升級算法
+
+### 測試和驗證
+- [x] 測試價格同步服務
+- [x] 測試價格變動檢測器
+- [x] 測試更新後的算法（但發現數據不足）
+- [ ] 等待同步詳細交易記錄後再測試
+
+### 前端更新
+- [x] API 已經使用真實的算法（基於統計數據）
+- [x] 前端顯示可疑度分數分解卡片
+- [ ] 等待同步詳細交易記錄後升級

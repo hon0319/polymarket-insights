@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS market_price_history (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  market_id INT NOT NULL,\n  condition_id VARCHAR(255) NOT NULL,\n  price INT NOT NULL COMMENT '價格（以分為單位，0-10000 代表 0%-100%）',\n  volume INT DEFAULT 0 COMMENT '交易量（美元，以分為單位）',\n  timestamp TIMESTAMP NOT NULL COMMENT '價格記錄時間',\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_market_id (market_id),\n  INDEX idx_condition_id (condition_id),\n  INDEX idx_timestamp (timestamp),\n  INDEX idx_market_timestamp (market_id, timestamp)\n) COMMENT='市場歷史價格數據表'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute CREATE TABLE IF NOT EXISTS market_price_history (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  market_id INT NOT NULL,\n  condition_id VARCHAR(255) NOT NULL,\n  price INT NOT NULL COMMENT '價格（以分為單位，0-10000 代表 0%-100%）',\n  volume INT DEFAULT 0 COMMENT '交易量（美元，以分為單位）',\n  timestamp TIMESTAMP NOT NULL COMMENT '價格記錄時間',\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_market_id (market_id),\n  INDEX idx_condition_id (condition_id),\n  INDEX idx_timestamp (timestamp),\n  INDEX idx_market_timestamp (market_id, timestamp)\n) COMMENT='市場歷史價格數據表'",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1825
+}

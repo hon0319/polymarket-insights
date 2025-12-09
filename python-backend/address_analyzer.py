@@ -240,11 +240,46 @@ class AddressAnalyzer:
             if not result or result['total_trades'] < 10:
                 return 0
             
-            # 模擬：假設 20-40% 的交易是早期交易
-            # 實際實作需要分析每筆交易的時間和市場價格變動
-            import random
-            random.seed(address_id)  # 確保結果可重現
-            early_trade_ratio = random.uniform(0.15, 0.45)
+            # 獲取地址的所有交易
+            cursor.execute("""
+                SELECT 
+                    at.market_id,
+                    at.timestamp as trade_timestamp,
+                    m.createdAt as market_created_at,
+                    m.endDate as market_end_date
+                FROM address_trades at
+                JOIN markets m ON at.market_id = m.id
+                WHERE at.address_id = %s
+                    AND m.createdAt IS NOT NULL
+                    AND m.endDate IS NOT NULL
+                ORDER BY at.timestamp ASC
+            """, (address_id,))
+            
+            trades = cursor.fetchall()
+            
+            if len(trades) < 10:
+                return 0
+            
+            # 計算早期交易比例
+            early_trades = 0
+            
+            for trade in trades:
+                market_created = trade['market_created_at']
+                market_end = trade['market_end_date']
+                trade_time = trade['trade_timestamp']
+                
+                # 計算市場生命週期
+                market_duration = (market_end - market_created).total_seconds()
+                
+                # 計算交易時間相對於市場開放的位置
+                trade_offset = (trade_time - market_created).total_seconds()
+                
+                # 如果交易發生在市場開放後的前 20% 時間，視為早期交易
+                if market_duration > 0 and (trade_offset / market_duration) < 0.2:
+                    early_trades += 1
+            
+            # 計算早期交易比例
+            early_trade_ratio = early_trades / len(trades)
             
             if early_trade_ratio < 0.1:
                 return 0
@@ -318,10 +353,36 @@ class AddressAnalyzer:
             if not result or result['total_trades'] < 10:
                 return 0
             
-            # 模擬：假設平均持倉時間在 48-168 小時之間
-            import random
-            random.seed(address_id + 1000)  # 確保結果可重現
-            avg_holding_hours = random.uniform(40, 200)
+            # 獲取地址的交易記錄，計算持倉時間
+            cursor.execute("""
+                SELECT 
+                    at.timestamp as trade_timestamp,
+                    m.endDate as market_end_date
+                FROM address_trades at
+                JOIN markets m ON at.market_id = m.id
+                WHERE at.address_id = %s
+                    AND m.endDate IS NOT NULL
+                    AND at.timestamp < m.endDate
+                ORDER BY at.timestamp ASC
+            """, (address_id,))
+            
+            trades = cursor.fetchall()
+            
+            if len(trades) < 10:
+                return 0
+            
+            # 計算平均持倉時間（從交易到市場結束）
+            total_holding_hours = 0
+            
+            for trade in trades:
+                trade_time = trade['trade_timestamp']
+                market_end = trade['market_end_date']
+                
+                # 計算持倉時間（小時）
+                holding_hours = (market_end - trade_time).total_seconds() / 3600
+                total_holding_hours += holding_hours
+            
+            avg_holding_hours = total_holding_hours / len(trades)
             
             if avg_holding_hours > 240:
                 return 0
@@ -374,10 +435,31 @@ class AddressAnalyzer:
             if not result or result['total_trades'] < 10:
                 return 0
             
-            # 模擬：假設參與率在 15-45% 之間
-            import random
-            random.seed(address_id + 2000)  # 確保結果可重現
-            participation_rate = random.uniform(0.12, 0.48)
+            # 獲取地址的交易記錄
+            cursor.execute("""
+                SELECT COUNT(DISTINCT at.market_id) as participated_markets
+                FROM address_trades at
+                WHERE at.address_id = %s
+            """, (address_id,))
+            
+            result2 = cursor.fetchone()
+            participated_markets = result2['participated_markets'] if result2 else 0
+            
+            if participated_markets == 0:
+                return 0
+            
+            # 獲取同期可參與的市場總數（簡化版：使用所有活躍市場）
+            cursor.execute("""
+                SELECT COUNT(*) as total_markets
+                FROM markets
+                WHERE isActive = TRUE
+            """)
+            
+            result3 = cursor.fetchone()
+            total_markets = result3['total_markets'] if result3 else 1
+            
+            # 計算參與率
+            participation_rate = participated_markets / total_markets if total_markets > 0 else 0
             
             if participation_rate > 0.5:
                 return 0

@@ -1,0 +1,66 @@
+{
+  "query": "DESCRIBE market_anomalies",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute DESCRIBE market_anomalies",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "market_id",
+      "Type": "int(11)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "anomaly_type",
+      "Type": "enum('early_whale','sudden_volume','coordinated_trading','price_manipulation')",
+      "Null": "NO",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "detected_at",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "involved_addresses",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "confidence_score",
+      "Type": "decimal(5,2)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "description",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint(11)\tNO\tPRI\tNULL\tauto_increment\nmarket_id\tint(11)\tNO\tMUL\tNULL\t\nanomaly_type\tenum('early_whale','sudden_volume','coordinated_trading','price_manipulation')\tNO\t\tNULL\t\ndetected_at\ttimestamp\tYES\tMUL\tCURRENT_TIMESTAMP\t\ninvolved_addresses\tjson\tYES\t\tNULL\t\nconfidence_score\tdecimal(5,2)\tYES\tMUL\tNULL\t\ndescription\ttext\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 1637
+}

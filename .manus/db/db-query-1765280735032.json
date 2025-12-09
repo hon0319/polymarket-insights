@@ -1,0 +1,20 @@
+{
+  "query": "SELECT \n    a.id,\n    a.address,\n    a.total_trades,\n    a.settled_count,\n    a.win_count,\n    a.loss_count,\n    a.avg_trade_size,\n    COUNT(at.id) as actual_trade_count\nFROM addresses a\nLEFT JOIN address_trades at ON a.id = at.address_id\nWHERE a.id = 1\nGROUP BY a.id",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT \n    a.id,\n    a.address,\n    a.total_trades,\n    a.settled_count,\n    a.win_count,\n    a.loss_count,\n    a.avg_trade_size,\n    COUNT(at.id) as actual_trade_count\nFROM addresses a\nLEFT JOIN address_trades at ON a.id = at.address_id\nWHERE a.id = 1\nGROUP BY a.id",
+  "rows": [
+    {
+      "id": "1",
+      "address": "0x8f3ff3c5750c20479f68db28407912bd8df67afa",
+      "total_trades": "0",
+      "settled_count": "0",
+      "win_count": "0",
+      "loss_count": "0",
+      "avg_trade_size": "0.000000",
+      "actual_trade_count": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\taddress\ttotal_trades\tsettled_count\twin_count\tloss_count\tavg_trade_size\tactual_trade_count\n1\t0x8f3ff3c5750c20479f68db28407912bd8df67afa\t0\t0\t0\t0\t0.000000\t0\n",
+  "stderr": "",
+  "execution_time_ms": 1646
+}
