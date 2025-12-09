@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, TrendingDown, Clock, Activity, Brain, Target } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RefreshCw, TrendingUp, TrendingDown, Clock, Activity, Brain, Target, Filter } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { Link } from "wouter";
 
 export default function WhaleTrades() {
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   
   // 獲取大額交易數據
   const { data: whaleTrades, isLoading, refetch } = trpc.trades.getWhaleTrades.useQuery(
@@ -19,17 +21,31 @@ export default function WhaleTrades() {
     }
   );
 
-  // 計算統計數據
+  // 獲取所有可用的分類
+  const categories = useMemo(() => {
+    if (!whaleTrades) return ["all"];
+    const cats = new Set(whaleTrades.map(t => t.category).filter(Boolean));
+    return ["all", ...Array.from(cats)];
+  }, [whaleTrades]);
+
+  // 根據分類篩選交易
+  const filteredTrades = useMemo(() => {
+    if (!whaleTrades) return [];
+    if (selectedCategory === "all") return whaleTrades;
+    return whaleTrades.filter(t => t.category === selectedCategory);
+  }, [whaleTrades, selectedCategory]);
+
+  // 計算統計數據（基於篩選後的數據）
   const stats = {
-    totalTrades: whaleTrades?.length || 0,
-    totalVolume: whaleTrades?.reduce((sum, t) => sum + t.amount, 0) || 0,
-    withPredictions: whaleTrades?.filter(t => t.consensusVote !== null).length || 0,
-    avgConfidence: whaleTrades && whaleTrades.length > 0
+    totalTrades: filteredTrades?.length || 0,
+    totalVolume: filteredTrades?.reduce((sum, t) => sum + t.amount, 0) || 0,
+    withPredictions: filteredTrades?.filter(t => t.consensusVote !== null).length || 0,
+    avgConfidence: filteredTrades && filteredTrades.length > 0
       ? Math.round(
-          whaleTrades
+          filteredTrades
             .filter(t => t.consensusConfidence !== null)
             .reduce((sum, t) => sum + (t.consensusConfidence || 0), 0) /
-          Math.max(1, whaleTrades.filter(t => t.consensusConfidence !== null).length)
+          Math.max(1, filteredTrades.filter(t => t.consensusConfidence !== null).length)
         )
       : 0,
   };
@@ -67,7 +83,7 @@ export default function WhaleTrades() {
                 <Activity className="h-8 w-8 text-pink-500" />
                 🐋 大額交易追蹤
               </h1>
-              <p className="text-cyan-400/70 mt-1">實時監控 Polymarket 鯨魚動向 + AI 預測分析</p>
+              <p className="text-cyan-400/70 mt-1">實時監控 Bentana 鯨魚動向 + AI 預測分析</p>
             </div>
             
             <div className="flex items-center gap-4">
@@ -104,6 +120,29 @@ export default function WhaleTrades() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Category Filter */}
+        <Card className="bg-gradient-to-r from-[#0f1535]/80 to-[#1a1f3a]/80 border-cyan-500/20 p-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Filter className="h-5 w-5 text-cyan-400" />
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48 bg-[#0a0e27]/50 border-cyan-500/30 text-cyan-400">
+                <SelectValue placeholder="選擇分類" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#0f1535] border-cyan-500/30">
+                <SelectItem value="all">所有分類</SelectItem>
+                {categories.filter(c => c !== "all").map(category => (
+                  <SelectItem key={category || "other"} value={category || "Other"}>
+                    {getCategoryLabel(category)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-sm text-cyan-400/70">
+              顯示 {filteredTrades?.length || 0} 筆交易
+            </span>
+          </div>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/30 p-6">
@@ -167,12 +206,14 @@ export default function WhaleTrades() {
             </div>
           )}
 
-          {!isLoading && (!whaleTrades || whaleTrades.length === 0) && (
+          {!isLoading && (!filteredTrades || filteredTrades.length === 0) && (
             <Card className="bg-[#0f1535]/50 border-cyan-500/20 p-12 text-center">
               <Activity className="w-16 h-16 text-cyan-400/30 mx-auto mb-4" />
-              <p className="text-cyan-400/70 text-lg">暫無大額交易數據</p>
+              <p className="text-cyan-400/70 text-lg">
+                {selectedCategory === "all" ? "暫無大額交易數據" : `該分類下暫無大額交易`}
+              </p>
               <p className="text-cyan-400/50 text-sm mt-2">
-                請確保 Python 後端服務正在運行並連接到 Polymarket
+                請確保 Python 後端服務正在運行並連接到 Bentana
               </p>
               <p className="text-cyan-400/50 text-xs mt-4">
                 啟動命令: cd python-backend && ./start.sh
@@ -180,9 +221,9 @@ export default function WhaleTrades() {
             </Card>
           )}
 
-          {!isLoading && whaleTrades && whaleTrades.length > 0 && (
+          {!isLoading && filteredTrades && filteredTrades.length > 0 && (
             <>
-              {whaleTrades.map((trade) => (
+              {filteredTrades.map((trade) => (
                 <Card
                   key={trade.id}
                   className="bg-gradient-to-r from-[#0f1535]/80 to-[#1a1f3a]/80 border-cyan-500/20 hover:border-cyan-500/40 transition-all p-6"
@@ -203,8 +244,8 @@ export default function WhaleTrades() {
                         </Badge>
                         
                         {trade.category && (
-                          <Badge variant="outline" className="border-cyan-500/30 text-cyan-400">
-                            {trade.category}
+                          <Badge variant="outline" className={getCategoryColor(trade.category)}>
+                            {getCategoryLabel(trade.category)}
                           </Badge>
                         )}
                       </div>
@@ -293,14 +334,14 @@ export default function WhaleTrades() {
         </div>
 
         {/* Info Card */}
-        {whaleTrades && whaleTrades.length > 0 && (
+        {filteredTrades && filteredTrades.length > 0 && (
           <Card className="p-6 mt-8 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-cyan-500/30">
             <h3 className="text-lg font-bold text-cyan-400 mb-3 flex items-center gap-2">
               <Brain className="h-5 w-5" />
               關於 AI 預測分析
             </h3>
             <div className="space-y-2 text-sm text-cyan-400/70">
-              <p>• 自動追蹤所有超過 $100 的 Polymarket 交易</p>
+              <p>• 自動追蹤所有超過 $100 的 Bentana 交易</p>
               <p>• 檢測到大額交易時，自動觸發 AI Swarm 分析（GPT-4, Claude, Gemini）</p>
               <p>• 多模型共識投票，計算平均信心指數</p>
               <p>• 實時數據存儲到 MySQL 資料庫，每 5 秒自動刷新</p>
@@ -311,4 +352,33 @@ export default function WhaleTrades() {
       </main>
     </div>
   );
+}
+
+
+// 獲取分類標籤
+function getCategoryLabel(category: string | null): string {
+  if (!category) return "其他";
+  const labels: Record<string, string> = {
+    "Politics": "政治",
+    "Crypto": "加密貨幣",
+    "Sports": "體育",
+    "Entertainment": "娛樂",
+    "Economics": "經濟",
+    "Other": "其他",
+  };
+  return labels[category] || category;
+}
+
+// 獲取分類顏色
+function getCategoryColor(category: string | null): string {
+  if (!category) return "border-gray-500/30 text-gray-400";
+  const colors: Record<string, string> = {
+    "Politics": "border-blue-500/50 text-blue-400",
+    "Crypto": "border-orange-500/50 text-orange-400",
+    "Sports": "border-green-500/50 text-green-400",
+    "Entertainment": "border-purple-500/50 text-purple-400",
+    "Economics": "border-yellow-500/50 text-yellow-400",
+    "Other": "border-gray-500/50 text-gray-400",
+  };
+  return colors[category] || colors["Other"];
 }

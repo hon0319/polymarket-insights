@@ -100,15 +100,20 @@ class PolymarketBackendService:
             
             # 計算當前價格（cents）
             price = market_data.get("price", 0)
-            current_price = int(price * 100) if price else 50  # 默認 50 cents
+            current_price = int(price * 100) if price else 50  # 預設 50 cents
+            
+            # 自動分類
+            from utils.categorizer import categorize_market
+            category = categorize_market(title)
             
             # 插入或更新市場數據
             query = """
                 INSERT INTO markets (
-                    conditionId, title, currentPrice, lastTradeTimestamp, isActive
-                ) VALUES (%s, %s, %s, %s, %s)
+                    conditionId, title, category, currentPrice, lastTradeTimestamp, isActive
+                ) VALUES (%s, %s, %s, %s, %s, %s)
                 ON DUPLICATE KEY UPDATE
                     title = VALUES(title),
+                    category = VALUES(category),
                     currentPrice = VALUES(currentPrice),
                     lastTradeTimestamp = VALUES(lastTradeTimestamp),
                     updatedAt = CURRENT_TIMESTAMP
@@ -117,6 +122,7 @@ class PolymarketBackendService:
             values = (
                 condition_id,
                 title,
+                category,
                 current_price,
                 datetime.now(),
                 True
@@ -272,17 +278,17 @@ class PolymarketBackendService:
     def initialize_swarm_agent(self):
         """初始化 SwarmAgent（多模型 AI 共識）"""
         try:
-            from models.model_factory import ModelFactory
+            from models.model_factory import SwarmAgent
             
-            # 初始化模型工廠
-            model_factory = ModelFactory()
-            
-            # 創建 Swarm 模型列表
-            self.swarm_models = [
-                {"name": "GPT-4", "model": model_factory.create_model("gpt-4")},
-                {"name": "Claude", "model": model_factory.create_model("claude")},
-                {"name": "Gemini", "model": model_factory.create_model("gemini")},
+            # 初始化 SwarmAgent
+            models = [
+                "openai/gpt-4o-mini",
+                "anthropic/claude-3.5-haiku",
+                "google/gemini-flash-1.5"
             ]
+            
+            self.swarm_agent = SwarmAgent(models)
+            self.swarm_models = [{"name": "Swarm", "agent": self.swarm_agent}]
             
             cprint(f"🤖 Swarm Agent initialized with {len(self.swarm_models)} models", "green")
             
@@ -334,30 +340,41 @@ Respond with ONLY a JSON object in this format:
 }}
 """
             
-            # 並行查詢所有模型
+            # 使用 SwarmAgent 獲取共識預測
+            if not self.swarm_agent:
+                cprint("⚠️ SwarmAgent not initialized", "yellow")
+                return
+            
+            # 調用 SwarmAgent
+            swarm_result = self.swarm_agent.get_consensus(
+                prompt=prompt,
+                system_prompt="You are an expert at analyzing prediction markets. Provide concise, data-driven predictions."
+            )
+            
+            # 解析 SwarmAgent 的回應
             predictions = []
-            for model_info in self.swarm_models:
+            for response_data in swarm_result.get("responses", []):
                 try:
-                    model_name = model_info["name"]
-                    model = model_info["model"]
+                    model_name = response_data.get("model", "Unknown")
+                    prediction = response_data.get("prediction", "YES")
+                    reasoning = response_data.get("reasoning", "")[:200]
                     
-                    response = model.query(prompt)
-                    
-                    # 解析 JSON 回應
+                    # 嘗試從 reasoning 中提取 confidence
+                    confidence = 50  # 預設值
                     import re
-                    json_match = re.search(r'\{[^}]+\}', response)
-                    if json_match:
-                        result = json.loads(json_match.group())
-                        predictions.append({
-                            "model": model_name,
-                            "prediction": result.get("prediction", "YES"),
-                            "confidence": result.get("confidence", 50),
-                            "reasoning": result.get("reasoning", "")[:200]
-                        })
-                        cprint(f"  ✅ {model_name}: {result.get('prediction')} ({result.get('confidence')}%)", "green")
+                    conf_match = re.search(r'confidence["\s:]+([0-9]+)', reasoning, re.IGNORECASE)
+                    if conf_match:
+                        confidence = int(conf_match.group(1))
                     
+                    predictions.append({
+                        "model": model_name,
+                        "prediction": prediction,
+                        "confidence": confidence,
+                        "reasoning": reasoning
+                    })
+                    cprint(f"  ✅ {model_name}: {prediction} ({confidence}%)", "green")
                 except Exception as e:
-                    cprint(f"  ⚠️ {model_name} failed: {e}", "yellow")
+                    cprint(f"  ⚠️ Parsing failed: {e}", "yellow")
             
             if len(predictions) == 0:
                 cprint("⚠️ No valid predictions received", "yellow")

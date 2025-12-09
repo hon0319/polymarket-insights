@@ -33,7 +33,7 @@ export default function Markets() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold neon-glow-pink">政治市場</h1>
-              <p className="text-muted-foreground mt-1">實時追蹤 Polymarket 政治預測市場</p>
+              <p className="text-muted-foreground mt-1">實時追蹤預測市場走勢</p>
             </div>
             <Link href="/">
               <Button variant="outline">返回首頁</Button>

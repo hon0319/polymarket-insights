@@ -26,7 +26,7 @@ export default function Home() {
             {/* Logo/Brand */}
             <div className="inline-block">
               <h1 className="text-6xl md:text-8xl font-black tracking-tight neon-glow-pink">
-                POLYMARKET
+                BENTANA
               </h1>
               <p className="text-2xl md:text-3xl font-bold tracking-widest neon-glow-cyan mt-2">
                 INSIGHTS
@@ -35,7 +35,7 @@ export default function Home() {
 
             {/* Tagline */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              AI 驅動的政治預測市場分析平台
+              AI 驅動的預測市場分析平台
               <br />
               <span className="text-primary">實時追蹤</span> · <span className="text-secondary">智能預測</span> · <span className="text-accent">大額警報</span>
             </p>
@@ -152,9 +152,9 @@ export default function Home() {
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-center md:text-left">
-              <p className="font-bold text-lg neon-glow-pink">POLYMARKET INSIGHTS</p>
+              <p className="font-bold text-lg neon-glow-pink">BENTANA INSIGHTS</p>
               <p className="text-sm text-muted-foreground mt-1">
-                AI 驅動的政治預測市場分析平台
+                AI 驅動的預測市場分析平台
               </p>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
@@ -165,7 +165,7 @@ export default function Home() {
             </div>
           </div>
           <div className="text-center mt-8 text-sm text-muted-foreground">
-            © 2025 Polymarket Insights. All rights reserved.
+            © 2025 Bentana. All rights reserved.
           </div>
         </div>
       </footer>
@@ -177,7 +177,7 @@ const features = [
   {
     icon: TrendingUp,
     title: "實時市場追蹤",
-    description: "通過 WebSocket 實時接收 Polymarket 政治市場的最新交易數據，第一時間掌握市場動態。"
+    description: "通過 WebSocket 實時接收預測市場的最新交易數據，第一時間掌握市場動態。"
   },
   {
     icon: Brain,
