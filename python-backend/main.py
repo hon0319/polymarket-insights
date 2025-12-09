@@ -8,6 +8,7 @@ import mysql.connector
 from datetime import datetime
 from termcolor import cprint, colored
 import websockets
+import traceback
 
 from config import *
 from agents.polymarket_agent import PolymarketAgent
@@ -33,7 +34,7 @@ class PolymarketBackendService:
             if not DATABASE_URL:
                 raise ValueError("DATABASE_URL not set in environment")
             
-            # Simple parsing (you might want to use urllib.parse for production)
+            # Simple parsing
             url_parts = DATABASE_URL.replace("mysql://", "").split("@")
             user_pass = url_parts[0].split(":")
             host_db = url_parts[1].split("/")
@@ -44,7 +45,8 @@ class PolymarketBackendService:
                 port=int(host_port[1]) if len(host_port) > 1 else 3306,
                 user=user_pass[0],
                 password=user_pass[1],
-                database=host_db[1].split("?")[0]  # Remove query params
+                database=host_db[1].split("?")[0],  # Remove query params
+                autocommit=True  # 自動提交
             )
             
             cprint("✅ Database connected successfully", "green")
@@ -52,6 +54,7 @@ class PolymarketBackendService:
             
         except Exception as e:
             cprint(f"❌ Database connection failed: {e}", "red")
+            traceback.print_exc()
             return False
     
     def initialize_agent(self):
@@ -67,7 +70,6 @@ class PolymarketBackendService:
             # 添加訂閱
             self.agent.subscribe_to_trades()
             self.agent.subscribe_to_comments()
-            # self.agent.subscribe_to_crypto_prices()  # 可選
             
             cprint("🤖 Polymarket Agent initialized", "green")
             cprint(f"   Subscriptions: {len(self.agent.subscriptions)}", "cyan")
@@ -75,13 +77,129 @@ class PolymarketBackendService:
             return True
         except Exception as e:
             cprint(f"❌ Agent initialization failed: {e}", "red")
+            traceback.print_exc()
             return False
+    
+    def save_market_to_db(self, market_data: dict):
+        """保存市場數據到資料庫"""
+        try:
+            if not self.db_connection:
+                return
+            
+            cursor = self.db_connection.cursor()
+            
+            # 提取市場信息
+            condition_id = market_data.get("conditionId", "")
+            title = market_data.get("title", "")[:500]  # 限制長度
+            slug = market_data.get("slug", "")[:200]
+            
+            # 計算當前價格（cents）
+            price = market_data.get("price", 0)
+            current_price = int(price * 100) if price else 50  # 默認 50 cents
+            
+            # 插入或更新市場數據
+            query = """
+                INSERT INTO markets (
+                    conditionId, title, currentPrice, lastTradeTimestamp, isActive
+                ) VALUES (%s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    title = VALUES(title),
+                    currentPrice = VALUES(currentPrice),
+                    lastTradeTimestamp = VALUES(lastTradeTimestamp),
+                    updatedAt = CURRENT_TIMESTAMP
+            """
+            
+            values = (
+                condition_id,
+                title,
+                current_price,
+                datetime.now(),
+                True
+            )
+            
+            cursor.execute(query, values)
+            cursor.close()
+            
+            # cprint(f"💾 Market saved: {title[:50]}...", "green")
+            
+        except Exception as e:
+            cprint(f"❌ Error saving market: {e}", "red")
+            traceback.print_exc()
+    
+    def save_trade_to_db(self, trade_data: dict, market_data: dict):
+        """保存交易數據到資料庫"""
+        try:
+            if not self.db_connection:
+                return
+            
+            cursor = self.db_connection.cursor()
+            
+            # 首先獲取 market ID
+            condition_id = market_data.get("conditionId", "")
+            cursor.execute("SELECT id FROM markets WHERE conditionId = %s", (condition_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                cursor.close()
+                return
+            
+            market_id = result[0]
+            
+            # 提取交易信息
+            trade_id = trade_data.get("transactionHash", f"trade_{int(datetime.now().timestamp())}")
+            raw_side = trade_data.get("side", "BUY").upper()
+            # 將 BUY/SELL 轉換為 YES/NO，或直接使用 outcome 欄位
+            if raw_side in ["BUY", "SELL"]:
+                # 如果有 outcome 欄位，優先使用
+                side = trade_data.get("outcome", "YES" if raw_side == "BUY" else "NO").upper()
+            else:
+                side = raw_side
+            # 確保 side 只能是 YES 或 NO
+            if side not in ["YES", "NO"]:
+                side = "YES"  # 預設值
+            
+            price = trade_data.get("price", 0)
+            size = trade_data.get("size", 0)
+            amount = price * size
+            
+            # 判斷是否為大額交易（超過 $100）
+            is_whale = amount >= 100
+            
+            # 插入交易數據
+            query = """
+                INSERT INTO trades (
+                    marketId, tradeId, side, price, amount, isWhale, timestamp
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    side = VALUES(side),
+                    price = VALUES(price),
+                    amount = VALUES(amount)
+            """
+            
+            values = (
+                market_id,
+                trade_id[:255],  # 限制長度
+                side,
+                int(price * 100),  # 轉為 cents
+                int(amount * 100),  # 轉為 cents
+                is_whale,
+                datetime.now()
+            )
+            
+            cursor.execute(query, values)
+            cursor.close()
+            
+            if is_whale:
+                cprint(f"🐋 Whale trade saved: ${amount:,.2f} on {market_data.get('title', 'Unknown')[:50]}", "yellow")
+            
+        except Exception as e:
+            cprint(f"❌ Error saving trade: {e}", "red")
+            traceback.print_exc()
     
     def on_polymarket_message(self, data: dict):
         """處理 Polymarket 消息"""
         topic = data.get("topic", "unknown")
         msg_type = data.get("type", "unknown")
-        # cprint(f"📨 Polymarket Message: {topic}/{msg_type}", "cyan")
         
         # 廣播到前端客戶端（使用線程安全的方式）
         if hasattr(self, '_event_loop') and self._event_loop:
@@ -96,19 +214,53 @@ class PolymarketBackendService:
     
     def on_polymarket_trade(self, data: dict):
         """處理 Polymarket 交易數據"""
-        payload = data.get("payload", {})
-        cprint(f"💰 Trade: {payload}", "magenta")
-        
-        # 廣播到前端客戶端（使用線程安全的方式）
-        if hasattr(self, '_event_loop') and self._event_loop:
-            asyncio.run_coroutine_threadsafe(
-                self.broadcast_to_clients({
-                    "type": "trade",
-                    "data": data,
-                    "timestamp": datetime.now().isoformat()
-                }),
-                self._event_loop
-            )
+        try:
+            payload = data.get("payload", {})
+            
+            # 提取市場和交易信息
+            market_data = {
+                "conditionId": payload.get("conditionId", ""),
+                "title": payload.get("title", ""),
+                "slug": payload.get("slug", ""),
+                "price": payload.get("price", 0),
+            }
+            
+            trade_data = {
+                "transactionHash": payload.get("transactionHash", ""),
+                "side": payload.get("side", "BUY"),
+                "price": payload.get("price", 0),
+                "size": payload.get("size", 0),
+            }
+            
+            # 保存到資料庫
+            self.save_market_to_db(market_data)
+            self.save_trade_to_db(trade_data, market_data)
+            
+            # 計算交易金額
+            amount = trade_data["price"] * trade_data["size"]
+            
+            # 廣播到前端客戶端（使用線程安全的方式）
+            if hasattr(self, '_event_loop') and self._event_loop:
+                asyncio.run_coroutine_threadsafe(
+                    self.broadcast_to_clients({
+                        "type": "trade",
+                        "data": {
+                            "market": market_data["title"],
+                            "conditionId": market_data["conditionId"],
+                            "side": trade_data["side"],
+                            "price": trade_data["price"],
+                            "size": trade_data["size"],
+                            "amount": amount,
+                            "isWhale": amount >= 100,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                    }),
+                    self._event_loop
+                )
+            
+        except Exception as e:
+            cprint(f"❌ Error processing trade: {e}", "red")
+            traceback.print_exc()
     
     def on_polymarket_error(self, error: Exception):
         """處理 Polymarket 錯誤"""
@@ -154,12 +306,10 @@ class PolymarketBackendService:
         elif msg_type == "subscribe_market":
             market_id = data.get("market_id")
             cprint(f"📡 Client subscribed to market {market_id}", "cyan")
-            # TODO: Implement market-specific subscriptions
         
         elif msg_type == "request_analysis":
             market_id = data.get("market_id")
             cprint(f"🧠 AI analysis requested for market {market_id}", "cyan")
-            # TODO: Trigger AI analysis and send result
     
     async def broadcast_to_clients(self, message: dict):
         """向所有連接的前端客戶端廣播消息"""
@@ -196,6 +346,7 @@ class PolymarketBackendService:
             
         except Exception as e:
             cprint(f"❌ WebSocket server failed: {e}", "red")
+            traceback.print_exc()
     
     def start(self):
         """啟動服務"""

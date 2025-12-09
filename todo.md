@@ -92,3 +92,13 @@
 - [x] 實作更穩健的錯誤處理和重連機制
 - [x] 測試連接穩定性
 - [x] 驗證能正常接收市場數據和交易信息
+
+
+## 實時數據存儲和展示
+- [x] 修改 Python 後端 on_polymarket_trade 回調，將交易數據存入 markets 表
+- [x] 修改 Python 後端 on_polymarket_trade 回調，將交易數據存入 trades 表
+- [x] 實作後端 tRPC API：獲取最近的大額交易列表
+- [x] 實作後端 tRPC API：獲取實時交易統計數據
+- [x] 更新前端 /whale-trades 頁面從 API 讀取數據
+- [x] 添加實時數據自動刷新功能
+- [x] 測試數據存儲和展示流程

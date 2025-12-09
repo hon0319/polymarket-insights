@@ -238,7 +238,27 @@ export async function getWhaleTrades(limit = 100) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(trades).where(eq(trades.isWhale, true)).orderBy(desc(trades.timestamp)).limit(limit);
+  // JOIN markets 表以獲取市場信息
+  const result = await db
+    .select({
+      id: trades.id,
+      tradeId: trades.tradeId,
+      side: trades.side,
+      price: trades.price,
+      amount: trades.amount,
+      timestamp: trades.timestamp,
+      marketId: trades.marketId,
+      marketTitle: markets.title,
+      conditionId: markets.conditionId,
+      category: markets.category,
+    })
+    .from(trades)
+    .innerJoin(markets, eq(trades.marketId, markets.id))
+    .where(eq(trades.isWhale, true))
+    .orderBy(desc(trades.timestamp))
+    .limit(limit);
+
+  return result;
 }
 
 // ============ Subscription Operations ============
