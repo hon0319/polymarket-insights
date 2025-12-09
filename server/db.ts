@@ -238,8 +238,8 @@ export async function getWhaleTrades(limit = 100) {
   const db = await getDb();
   if (!db) return [];
 
-  // JOIN markets 表以獲取市場信息
-  const result = await db
+  // 第一步：獲取所有大額交易和市場信息
+  const tradesWithMarkets = await db
     .select({
       id: trades.id,
       tradeId: trades.tradeId,
@@ -257,6 +257,27 @@ export async function getWhaleTrades(limit = 100) {
     .where(eq(trades.isWhale, true))
     .orderBy(desc(trades.timestamp))
     .limit(limit);
+
+  // 第二步：為每個交易獲取最新的預測
+  const result = await Promise.all(
+    tradesWithMarkets.map(async (trade) => {
+      const latestPrediction = await getLatestPredictionByMarketId(trade.marketId);
+      
+      return {
+        ...trade,
+        predictionId: latestPrediction?.id || null,
+        aiModel: latestPrediction?.aiModel || null,
+        prediction: latestPrediction?.prediction || null,
+        confidence: latestPrediction?.confidence || null,
+        reasoning: latestPrediction?.reasoning || null,
+        consensusVote: latestPrediction?.consensusVote || null,
+        consensusConfidence: latestPrediction?.consensusConfidence || null,
+        totalModels: latestPrediction?.totalModels || null,
+        agreeModels: latestPrediction?.agreeModels || null,
+        predictionCreatedAt: latestPrediction?.createdAt || null,
+      };
+    })
+  );
 
   return result;
 }

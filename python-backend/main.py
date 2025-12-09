@@ -21,6 +21,8 @@ class PolymarketBackendService:
         self.db_connection = None
         self.agent = None
         self.ws_server = None
+        self.swarm_agent = None
+        self.prediction_cache = {}  # 緩存最近的預測，避免重複分析
         
         cprint("=" * 60, "cyan")
         cprint("🌙 Polymarket Insights - Python Backend Service", "cyan", attrs=['bold'])
@@ -73,6 +75,9 @@ class PolymarketBackendService:
             
             cprint("🤖 Polymarket Agent initialized", "green")
             cprint(f"   Subscriptions: {len(self.agent.subscriptions)}", "cyan")
+            
+            # 初始化 SwarmAgent
+            self.initialize_swarm_agent()
             
             return True
         except Exception as e:
@@ -191,6 +196,8 @@ class PolymarketBackendService:
             
             if is_whale:
                 cprint(f"🐋 Whale trade saved: ${amount:,.2f} on {market_data.get('title', 'Unknown')[:50]}", "yellow")
+                # 觸發 AI 預測
+                self.trigger_ai_prediction(market_id, market_data)
             
         except Exception as e:
             cprint(f"❌ Error saving trade: {e}", "red")
@@ -260,6 +267,162 @@ class PolymarketBackendService:
             
         except Exception as e:
             cprint(f"❌ Error processing trade: {e}", "red")
+            traceback.print_exc()
+    
+    def initialize_swarm_agent(self):
+        """初始化 SwarmAgent（多模型 AI 共識）"""
+        try:
+            from models.model_factory import ModelFactory
+            
+            # 初始化模型工廠
+            model_factory = ModelFactory()
+            
+            # 創建 Swarm 模型列表
+            self.swarm_models = [
+                {"name": "GPT-4", "model": model_factory.create_model("gpt-4")},
+                {"name": "Claude", "model": model_factory.create_model("claude")},
+                {"name": "Gemini", "model": model_factory.create_model("gemini")},
+            ]
+            
+            cprint(f"🤖 Swarm Agent initialized with {len(self.swarm_models)} models", "green")
+            
+        except Exception as e:
+            cprint(f"⚠️ Swarm Agent initialization failed: {e}", "yellow")
+            self.swarm_models = []
+    
+    def trigger_ai_prediction(self, market_id: int, market_data: dict):
+        """觸發 AI 預測（異步執行）"""
+        condition_id = market_data.get("conditionId", "")
+        
+        # 檢查是否最近已經分析過（避免重複）
+        if condition_id in self.prediction_cache:
+            last_prediction_time = self.prediction_cache[condition_id]
+            if (datetime.now() - last_prediction_time).seconds < 300:  # 5 分鐘內不重複
+                return
+        
+        # 異步執行 AI 分析（不阻塞主線程）
+        if hasattr(self, '_event_loop') and self._event_loop:
+            asyncio.run_coroutine_threadsafe(
+                self.run_ai_prediction(market_id, market_data),
+                self._event_loop
+            )
+    
+    async def run_ai_prediction(self, market_id: int, market_data: dict):
+        """執行 AI 預測（異步）"""
+        try:
+            condition_id = market_data.get("conditionId", "")
+            title = market_data.get("title", "")
+            
+            cprint(f"🧠 Starting AI prediction for: {title[:50]}...", "magenta")
+            
+            if not self.swarm_models or len(self.swarm_models) == 0:
+                cprint("⚠️ No AI models available for prediction", "yellow")
+                return
+            
+            # 構建提示詞
+            prompt = f"""
+You are analyzing a Polymarket prediction market.
+
+Market Title: {title}
+
+Based on your knowledge and reasoning, predict the outcome of this market.
+Respond with ONLY a JSON object in this format:
+{{
+    "prediction": "YES" or "NO",
+    "confidence": 0-100 (integer),
+    "reasoning": "Brief explanation (max 200 chars)"
+}}
+"""
+            
+            # 並行查詢所有模型
+            predictions = []
+            for model_info in self.swarm_models:
+                try:
+                    model_name = model_info["name"]
+                    model = model_info["model"]
+                    
+                    response = model.query(prompt)
+                    
+                    # 解析 JSON 回應
+                    import re
+                    json_match = re.search(r'\{[^}]+\}', response)
+                    if json_match:
+                        result = json.loads(json_match.group())
+                        predictions.append({
+                            "model": model_name,
+                            "prediction": result.get("prediction", "YES"),
+                            "confidence": result.get("confidence", 50),
+                            "reasoning": result.get("reasoning", "")[:200]
+                        })
+                        cprint(f"  ✅ {model_name}: {result.get('prediction')} ({result.get('confidence')}%)", "green")
+                    
+                except Exception as e:
+                    cprint(f"  ⚠️ {model_name} failed: {e}", "yellow")
+            
+            if len(predictions) == 0:
+                cprint("⚠️ No valid predictions received", "yellow")
+                return
+            
+            # 計算共識
+            yes_count = sum(1 for p in predictions if p["prediction"] == "YES")
+            no_count = len(predictions) - yes_count
+            consensus = "YES" if yes_count > no_count else "NO"
+            avg_confidence = sum(p["confidence"] for p in predictions) // len(predictions)
+            
+            cprint(f"🎯 Consensus: {consensus} (Confidence: {avg_confidence}%, {yes_count} YES / {no_count} NO)", "cyan", attrs=['bold'])
+            
+            # 存入資料庫
+            self.save_prediction_to_db(market_id, consensus, avg_confidence, predictions)
+            
+            # 更新緩存
+            self.prediction_cache[condition_id] = datetime.now()
+            
+        except Exception as e:
+            cprint(f"❌ AI prediction failed: {e}", "red")
+            traceback.print_exc()
+    
+    def save_prediction_to_db(self, market_id: int, consensus: str, confidence: int, model_predictions: list):
+        """儲存 AI 預測到資料庫"""
+        try:
+            if not self.db_connection:
+                return
+            
+            cursor = self.db_connection.cursor()
+            
+            # 計算共識數據
+            total_models = len(model_predictions)
+            agree_models = sum(1 for p in model_predictions if p["prediction"] == consensus)
+            
+            # 為每個模型儲存一條預測記錄
+            query = """
+                INSERT INTO predictions (
+                    marketId, aiModel, prediction, confidence, reasoning,
+                    consensusVote, consensusConfidence, totalModels, agreeModels, createdAt
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            for pred in model_predictions:
+                values = (
+                    market_id,
+                    pred["model"],
+                    pred["prediction"],
+                    pred["confidence"],
+                    pred["reasoning"][:500] if pred.get("reasoning") else None,  # 限制長度
+                    consensus,
+                    confidence,
+                    total_models,
+                    agree_models,
+                    datetime.now()
+                )
+                
+                cursor.execute(query, values)
+            
+            cursor.close()
+            
+            cprint(f"💾 {len(model_predictions)} predictions saved to database", "green")
+            
+        except Exception as e:
+            cprint(f"❌ Error saving prediction: {e}", "red")
             traceback.print_exc()
     
     def on_polymarket_error(self, error: Exception):

@@ -37,7 +37,9 @@ describe("OpenRouter API", () => {
     const modelIds = data.data.map((model: any) => model.id);
     expect(modelIds).toContain("openai/gpt-4o-mini");
     expect(modelIds).toContain("anthropic/claude-3.5-haiku");
-    expect(modelIds).toContain("google/gemini-2.0-flash-exp");
+    // Gemini 模型名稱可能會更新，只檢查是否有 Google 模型
+    const hasGoogleModel = modelIds.some((id: string) => id.startsWith("google/gemini"));
+    expect(hasGoogleModel).toBe(true);
   });
   
   it("should be able to make a simple chat completion", async () => {

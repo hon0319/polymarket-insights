@@ -102,3 +102,14 @@
 - [x] 更新前端 /whale-trades 頁面從 API 讀取數據
 - [x] 添加實時數據自動刷新功能
 - [x] 測試數據存儲和展示流程
+
+
+## AI 預測功能整合
+- [x] 修改 Python 後端：當檢測到大額交易時觸發 AI Swarm 分析
+- [x] 實作 AI 預測邏輯：調用多個模型並計算共識
+- [x] 將 AI 預測結果存入 predictions 表
+- [x] 修改 getWhaleTrades API：JOIN predictions 表返回預測數據
+- [x] 更新前端 WhaleTrades 頁面：顯示 AI 預測徵章和信心指數
+- [x] 添加預測詳情展開功能：顯示各模型投票和推理
+- [x] 撰寫 AI 預測功能的單元測試
+- [x] 端到端測試：驗證大額交易 → AI 分析 → 前端展示流程

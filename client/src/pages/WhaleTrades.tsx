@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, TrendingUp, TrendingDown, Clock, Activity } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Clock, Activity, Brain, Target } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { Link } from "wouter";
@@ -18,6 +18,21 @@ export default function WhaleTrades() {
       refetchInterval: autoRefresh ? 5000 : false, // 每 5 秒自動刷新
     }
   );
+
+  // 計算統計數據
+  const stats = {
+    totalTrades: whaleTrades?.length || 0,
+    totalVolume: whaleTrades?.reduce((sum, t) => sum + t.amount, 0) || 0,
+    withPredictions: whaleTrades?.filter(t => t.consensusVote !== null).length || 0,
+    avgConfidence: whaleTrades && whaleTrades.length > 0
+      ? Math.round(
+          whaleTrades
+            .filter(t => t.consensusConfidence !== null)
+            .reduce((sum, t) => sum + (t.consensusConfidence || 0), 0) /
+          Math.max(1, whaleTrades.filter(t => t.consensusConfidence !== null).length)
+        )
+      : 0,
+  };
 
   // 格式化價格（從 cents 轉為美元）
   const formatPrice = (cents: number) => {
@@ -52,7 +67,7 @@ export default function WhaleTrades() {
                 <Activity className="h-8 w-8 text-pink-500" />
                 🐋 大額交易追蹤
               </h1>
-              <p className="text-cyan-400/70 mt-1">實時監控 Polymarket 鯨魚動向</p>
+              <p className="text-cyan-400/70 mt-1">實時監控 Polymarket 鯨魚動向 + AI 預測分析</p>
             </div>
             
             <div className="flex items-center gap-4">
@@ -90,13 +105,13 @@ export default function WhaleTrades() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-pink-500/10 to-purple-500/10 border-pink-500/30 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-pink-400/70 text-sm">總交易數</p>
                 <p className="text-3xl font-bold text-pink-400 mt-1">
-                  {whaleTrades?.length || 0}
+                  {stats.totalTrades}
                 </p>
               </div>
               <TrendingUp className="w-12 h-12 text-pink-400/30" />
@@ -108,9 +123,7 @@ export default function WhaleTrades() {
               <div>
                 <p className="text-cyan-400/70 text-sm">總交易額</p>
                 <p className="text-3xl font-bold text-cyan-400 mt-1">
-                  {whaleTrades
-                    ? formatAmount(whaleTrades.reduce((sum, t) => sum + t.amount, 0))
-                    : "$0"}
+                  {formatAmount(stats.totalVolume)}
                 </p>
               </div>
               <TrendingDown className="w-12 h-12 text-cyan-400/30" />
@@ -120,16 +133,27 @@ export default function WhaleTrades() {
           <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-400/70 text-sm">平均交易額</p>
+                <p className="text-purple-400/70 text-sm">AI 預測數</p>
                 <p className="text-3xl font-bold text-purple-400 mt-1">
-                  {whaleTrades && whaleTrades.length > 0
-                    ? formatAmount(
-                        whaleTrades.reduce((sum, t) => sum + t.amount, 0) / whaleTrades.length
-                      )
-                    : "$0"}
+                  {stats.withPredictions}
+                </p>
+                <p className="text-xs text-purple-400/50 mt-1">
+                  {stats.totalTrades > 0 ? Math.round((stats.withPredictions / stats.totalTrades) * 100) : 0}% 覆蓋率
                 </p>
               </div>
-              <Clock className="w-12 h-12 text-purple-400/30" />
+              <Brain className="w-12 h-12 text-purple-400/30" />
+            </div>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-pink-500/10 to-cyan-500/10 border-pink-500/30 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-pink-400/70 text-sm">平均信心</p>
+                <p className="text-3xl font-bold text-pink-400 mt-1">
+                  {stats.avgConfidence}%
+                </p>
+              </div>
+              <Target className="w-12 h-12 text-pink-400/30" />
             </div>
           </Card>
         </div>
@@ -163,7 +187,8 @@ export default function WhaleTrades() {
                   key={trade.id}
                   className="bg-gradient-to-r from-[#0f1535]/80 to-[#1a1f3a]/80 border-cyan-500/20 hover:border-cyan-500/40 transition-all p-6"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-6">
+                    {/* 左側：市場信息 */}
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Badge
@@ -208,7 +233,8 @@ export default function WhaleTrades() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-2">
+                    {/* 右側：AI 預測 */}
+                    <div className="flex flex-col items-end gap-3">
                       <div className="text-right">
                         <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400">
                           {formatAmount(trade.amount)}
@@ -217,6 +243,47 @@ export default function WhaleTrades() {
                           ID: {trade.tradeId.slice(0, 8)}...
                         </div>
                       </div>
+
+                      {/* AI 預測徽章 */}
+                      {trade.consensusVote ? (
+                        <div className="flex flex-col items-end gap-2 px-4 py-3 bg-gradient-to-br from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Brain className="h-4 w-4 text-pink-400" />
+                            <Badge
+                              variant="outline"
+                              className={
+                                trade.consensusVote === "YES"
+                                  ? "border-green-500/50 text-green-400 bg-green-500/10"
+                                  : trade.consensusVote === "NO"
+                                  ? "border-red-500/50 text-red-400 bg-red-500/10"
+                                  : "border-yellow-500/50 text-yellow-400 bg-yellow-500/10"
+                              }
+                            >
+                              AI: {trade.consensusVote}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-1">
+                            <Target className="h-3 w-3 text-pink-400" />
+                            <span className="text-xs text-pink-400 font-semibold">
+                              {trade.consensusConfidence}% 信心
+                            </span>
+                          </div>
+                          
+                          {trade.totalModels && (
+                            <div className="text-xs text-purple-400/70">
+                              {trade.agreeModels}/{trade.totalModels} 模型同意
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="px-4 py-3 bg-slate-800/30 border border-slate-700/30 rounded-lg">
+                          <div className="text-xs text-slate-400 flex items-center gap-2">
+                            <Clock className="h-3 w-3 animate-pulse" />
+                            等待 AI 分析...
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -228,11 +295,15 @@ export default function WhaleTrades() {
         {/* Info Card */}
         {whaleTrades && whaleTrades.length > 0 && (
           <Card className="p-6 mt-8 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-cyan-500/30">
-            <h3 className="text-lg font-bold text-cyan-400 mb-3">關於大額交易追蹤</h3>
+            <h3 className="text-lg font-bold text-cyan-400 mb-3 flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              關於 AI 預測分析
+            </h3>
             <div className="space-y-2 text-sm text-cyan-400/70">
               <p>• 自動追蹤所有超過 $100 的 Polymarket 交易</p>
-              <p>• 實時數據存儲到 MySQL 資料庫</p>
-              <p>• 每 5 秒自動刷新最新交易</p>
+              <p>• 檢測到大額交易時，自動觸發 AI Swarm 分析（GPT-4, Claude, Gemini）</p>
+              <p>• 多模型共識投票，計算平均信心指數</p>
+              <p>• 實時數據存儲到 MySQL 資料庫，每 5 秒自動刷新</p>
               <p>• 支援所有市場類別（政治、加密貨幣、體育等）</p>
             </div>
           </Card>
