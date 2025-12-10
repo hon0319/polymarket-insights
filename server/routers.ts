@@ -270,6 +270,93 @@ export const appRouter = router({
       return await db.getUnreadNotificationCount(ctx.user.id);
     }),
   }),
+
+  // Alert Subscriptions API
+  alertSubscriptions: router({
+    // 獲取用戶的所有訂閱
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUserAlertSubscriptions(ctx.user.id);
+    }),
+
+    // 獲取單個訂閱
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAlertSubscription(input.id);
+      }),
+
+    // 創建訂閱
+    create: protectedProcedure
+      .input(z.object({
+        subscription_type: z.enum(['address', 'market', 'category']),
+        target_id: z.string(),
+        target_name: z.string().optional(),
+        alert_types: z.array(z.string()),
+        is_active: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await db.createAlertSubscription({
+          user_id: ctx.user.id,
+          ...input,
+        });
+      }),
+
+    // 更新訂閱
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        alert_types: z.array(z.string()).optional(),
+        is_active: z.boolean().optional(),
+        target_name: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        const success = await db.updateAlertSubscription(id, updates);
+        return { success };
+      }),
+
+    // 刪u9664訂閱
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const success = await db.deleteAlertSubscription(input.id);
+        return { success };
+      }),
+  }),
+
+  // Alert Notifications API
+  alertNotifications: router({
+    // 獲取用戶的通知
+    list: protectedProcedure
+      .input(z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }).optional())
+      .query(async ({ ctx, input }) => {
+        const limit = input?.limit ?? 50;
+        const offset = input?.offset ?? 0;
+        return await db.getUserAlertNotifications(ctx.user.id, limit, offset);
+      }),
+
+    // 獲取未u8b80通知數量
+    getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUnreadAlertNotificationCount(ctx.user.id);
+    }),
+
+    // 標記通知為已讀
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const success = await db.markAlertNotificationAsRead(input.id);
+        return { success };
+      }),
+
+    // 標記所有通知為已讀
+    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+      const success = await db.markAllNotificationsAsRead(ctx.user.id);
+      return { success };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -11,6 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import WhaleTrades from "./pages/WhaleTrades";
 import AddressLeaderboard from "./pages/AddressLeaderboard";
 import AddressDetail from "./pages/AddressDetail";
+import Subscriptions from "./pages/Subscriptions";
+import Notifications from "./pages/Notifications";
 
 function Router() {
   return (
@@ -22,6 +24,8 @@ function Router() {
       <Route path={"/whale-trades"} component={WhaleTrades} />
       <Route path={"/addresses"} component={AddressLeaderboard} />
       <Route path={"/address/:id"} component={AddressDetail} />
+      <Route path={"/subscriptions"} component={Subscriptions} />
+      <Route path={"/notifications"} component={Notifications} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

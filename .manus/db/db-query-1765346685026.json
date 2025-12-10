@@ -1,0 +1,22 @@
+{
+  "query": "SELECT * FROM trades LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT * FROM trades LIMIT 1",
+  "rows": [
+    {
+      "id": "1",
+      "marketId": "16",
+      "tradeId": "0xf65ad42e77b45e9abde6f23318bff5df95bddbe55920beda343dbd5798a9ae5b",
+      "side": "YES",
+      "price": "66",
+      "amount": "714",
+      "isWhale": "0",
+      "timestamp": "2025-12-09 03:32:41",
+      "createdAt": "2025-12-09 08:32:41",
+      "address_id": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tmarketId\ttradeId\tside\tprice\tamount\tisWhale\ttimestamp\tcreatedAt\taddress_id\n1\t16\t0xf65ad42e77b45e9abde6f23318bff5df95bddbe55920beda343dbd5798a9ae5b\tYES\t66\t714\t0\t2025-12-09 03:32:41\t2025-12-09 08:32:41\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 1518
+}

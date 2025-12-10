@@ -3,7 +3,8 @@ import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, XCircle, Clock, Bell, BellOff } from 'lucide-react';
+import { toast } from 'sonner';
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function AddressDetail() {
@@ -16,6 +17,34 @@ export default function AddressDetail() {
   const { data: winRateTrend, isLoading: trendLoading } = trpc.addresses.getWinRateTrend.useQuery({ addressId });
   const { data: categoryFocus, isLoading: focusLoading } = trpc.addresses.getCategoryFocus.useQuery({ addressId });
   const { data: scoreBreakdown, isLoading: breakdownLoading } = trpc.addresses.getSuspicionScoreBreakdown.useQuery({ addressId });
+  const { data: subscriptions } = trpc.alertSubscriptions.list.useQuery();
+  const utils = trpc.useUtils();
+
+  // 檢查是否已訂閱此地址
+  const isSubscribed = subscriptions?.some(
+    sub => sub.subscription_type === 'address' && sub.target_id === String(addressId) && sub.is_active
+  );
+
+  const createSubscriptionMutation = trpc.alertSubscriptions.create.useMutation({
+    onSuccess: () => {
+      utils.alertSubscriptions.list.invalidate();
+      toast.success('訂閱成功！您將收到此地址的警報通知');
+    },
+    onError: (error) => {
+      toast.error(`訂閱失敗：${error.message}`);
+    }
+  });
+
+  const handleSubscribe = () => {
+    if (!address) return;
+    createSubscriptionMutation.mutate({
+      subscription_type: 'address',
+      target_id: String(addressId),
+      target_name: `${address.address.slice(0, 6)}...${address.address.slice(-4)}`,
+      alert_types: ['high_suspicion_address', 'suspicious_trade', 'large_trade'],
+      is_active: true
+    });
+  };
 
   if (addressLoading) {
     return (
@@ -82,6 +111,25 @@ export default function AddressDetail() {
               {getSuspicionBadge(address.suspicion_score)}
               <div className="text-3xl font-bold text-pink-500">{address.suspicion_score}</div>
               <div className="text-sm text-muted-foreground">可疑度分數</div>
+              <Button
+                variant={isSubscribed ? "secondary" : "default"}
+                size="sm"
+                onClick={handleSubscribe}
+                disabled={isSubscribed || createSubscriptionMutation.isPending}
+                className="mt-2"
+              >
+                {isSubscribed ? (
+                  <>
+                    <BellOff className="w-4 h-4 mr-2" />
+                    已訂閱
+                  </>
+                ) : (
+                  <>
+                    <Bell className="w-4 h-4 mr-2" />
+                    訂閱此地址
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </CardHeader>

@@ -1,0 +1,9 @@
+{
+  "query": "-- 創建 alert_notifications 表（警報通知記錄）\nCREATE TABLE IF NOT EXISTS alert_notifications (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  user_id INT NOT NULL,\n  subscription_id INT NOT NULL,\n  alert_type ENUM('suspicious_trade', 'large_trade', 'price_spike', 'high_suspicion_address') NOT NULL,\n  title VARCHAR(500) NOT NULL,\n  message TEXT NOT NULL,\n  metadata JSON COMMENT '額外的元數據（地址、市場、交易詳情等）',\n  is_read BOOLEAN DEFAULT FALSE,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_user_id (user_id),\n  INDEX idx_subscription_id (subscription_id),\n  INDEX idx_alert_type (alert_type),\n  INDEX idx_is_read (is_read),\n  INDEX idx_created_at (created_at),\n  FOREIGN KEY (subscription_id) REFERENCES alert_subscriptions(id) ON DELETE CASCADE\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute -- 創建 alert_notifications 表（警報通知記錄）\nCREATE TABLE IF NOT EXISTS alert_notifications (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  user_id INT NOT NULL,\n  subscription_id INT NOT NULL,\n  alert_type ENUM('suspicious_trade', 'large_trade', 'price_spike', 'high_suspicion_address') NOT NULL,\n  title VARCHAR(500) NOT NULL,\n  message TEXT NOT NULL,\n  metadata JSON COMMENT '額外的元數據（地址、市場、交易詳情等）',\n  is_read BOOLEAN DEFAULT FALSE,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n  INDEX idx_user_id (user_id),\n  INDEX idx_subscription_id (subscription_id),\n  INDEX idx_alert_type (alert_type),\n  INDEX idx_is_read (is_read),\n  INDEX idx_created_at (created_at),\n  FOREIGN KEY (subscription_id) REFERENCES alert_subscriptions(id) ON DELETE CASCADE\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2002
+}

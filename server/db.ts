@@ -604,3 +604,430 @@ export async function getAddressCategoryFocus(addressId: number) {
     { category: 'Other', percentage: 20.4, trades: 50 }
   ];
 }
+
+
+// ============ Alert Subscription Operations ============
+
+export interface AlertSubscription {
+  id: number;
+  user_id: number;
+  subscription_type: 'address' | 'market' | 'category';
+  target_id: string;
+  target_name: string | null;
+  alert_types: string[];
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface InsertAlertSubscription {
+  user_id: number;
+  subscription_type: 'address' | 'market' | 'category';
+  target_id: string;
+  target_name?: string;
+  alert_types: string[];
+  is_active?: boolean;
+}
+
+export interface AlertNotification {
+  id: number;
+  user_id: number;
+  subscription_id: number;
+  alert_type: 'suspicious_trade' | 'large_trade' | 'price_spike' | 'high_suspicion_address';
+  title: string;
+  message: string;
+  metadata: any;
+  is_read: boolean;
+  created_at: Date;
+}
+
+export interface InsertAlertNotification {
+  user_id: number;
+  subscription_id: number;
+  alert_type: 'suspicious_trade' | 'large_trade' | 'price_spike' | 'high_suspicion_address';
+  title: string;
+  message: string;
+  metadata?: any;
+  is_read?: boolean;
+}
+
+/**
+ * 創建警報訂閱
+ */
+export async function createAlertSubscription(subscription: InsertAlertSubscription): Promise<AlertSubscription | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create alert subscription: database not available");
+    return null;
+  }
+
+  try {
+    await db.execute(sql`
+      INSERT INTO alert_subscriptions 
+      (user_id, subscription_type, target_id, target_name, alert_types, is_active)
+      VALUES (
+        ${subscription.user_id},
+        ${subscription.subscription_type},
+        ${subscription.target_id},
+        ${subscription.target_name || null},
+        ${JSON.stringify(subscription.alert_types)},
+        ${subscription.is_active ?? true}
+      )
+      ON DUPLICATE KEY UPDATE
+        alert_types = VALUES(alert_types),
+        is_active = VALUES(is_active),
+        updated_at = CURRENT_TIMESTAMP
+    `);
+
+    // 獲取插入的訂閱
+    const subscriptions: any = await db.execute(sql`
+      SELECT * FROM alert_subscriptions
+      WHERE user_id = ${subscription.user_id}
+        AND subscription_type = ${subscription.subscription_type}
+        AND target_id = ${subscription.target_id}
+      LIMIT 1
+    `);
+
+    if (subscriptions && subscriptions[0] && subscriptions[0].length > 0) {
+      const row = subscriptions[0][0] as any;
+      return {
+        ...row,
+        alert_types: JSON.parse(row.alert_types),
+        is_active: Boolean(row.is_active)
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[Database] Error creating alert subscription:", error);
+    return null;
+  }
+}
+
+/**
+ * 獲取用戶的所有訂閱
+ */
+export async function getUserAlertSubscriptions(userId: number): Promise<AlertSubscription[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user alert subscriptions: database not available");
+    return [];
+  }
+
+  try {
+    const result: any = await db.execute(sql`
+      SELECT * FROM alert_subscriptions
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+    `);
+
+    if (!result || !result[0]) return [];
+
+    return result[0].map((row: any) => ({
+      ...row,
+      alert_types: JSON.parse(row.alert_types),
+      is_active: Boolean(row.is_active)
+    }));
+  } catch (error) {
+    console.error("[Database] Error getting user alert subscriptions:", error);
+    return [];
+  }
+}
+
+/**
+ * 獲取特定訂閱
+ */
+export async function getAlertSubscription(subscriptionId: number): Promise<AlertSubscription | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get alert subscription: database not available");
+    return null;
+  }
+
+  try {
+    const result: any = await db.execute(sql`
+      SELECT * FROM alert_subscriptions
+      WHERE id = ${subscriptionId}
+      LIMIT 1
+    `);
+
+    if (result && result[0] && result[0].length > 0) {
+      const row = result[0][0] as any;
+      return {
+        ...row,
+        alert_types: JSON.parse(row.alert_types),
+        is_active: Boolean(row.is_active)
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[Database] Error getting alert subscription:", error);
+    return null;
+  }
+}
+
+/**
+ * 更新訂閱
+ */
+export async function updateAlertSubscription(
+  subscriptionId: number,
+  updates: Partial<InsertAlertSubscription>
+): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update alert subscription: database not available");
+    return false;
+  }
+
+  try {
+    // 先獲取現有訂閱
+    const existing = await getAlertSubscription(subscriptionId);
+    if (!existing) {
+      return false;
+    }
+
+    // 合併更新
+    const merged = {
+      ...existing,
+      ...updates
+    };
+
+    // 重新創建（使用 ON DUPLICATE KEY UPDATE）
+    await db.execute(sql`
+      UPDATE alert_subscriptions
+      SET 
+        alert_types = ${JSON.stringify(merged.alert_types)},
+        is_active = ${merged.is_active},
+        target_name = ${merged.target_name || null},
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${subscriptionId}
+    `);
+
+    return true;
+  } catch (error) {
+    console.error("[Database] Error updating alert subscription:", error);
+    return false;
+  }
+}
+
+/**
+ * 刪除訂閱
+ */
+export async function deleteAlertSubscription(subscriptionId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete alert subscription: database not available");
+    return false;
+  }
+
+  try {
+    await db.execute(sql`
+      DELETE FROM alert_subscriptions
+      WHERE id = ${subscriptionId}
+    `);
+
+    return true;
+  } catch (error) {
+    console.error("[Database] Error deleting alert subscription:", error);
+    return false;
+  }
+}
+
+/**
+ * 創建警報通知
+ */
+export async function createAlertNotification(notification: InsertAlertNotification): Promise<AlertNotification | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create alert notification: database not available");
+    return null;
+  }
+
+  try {
+    await db.execute(sql`
+      INSERT INTO alert_notifications
+      (user_id, subscription_id, alert_type, title, message, metadata, is_read)
+      VALUES (
+        ${notification.user_id},
+        ${notification.subscription_id},
+        ${notification.alert_type},
+        ${notification.title},
+        ${notification.message},
+        ${notification.metadata ? JSON.stringify(notification.metadata) : null},
+        ${notification.is_read ?? false}
+      )
+    `);
+
+    // 獲取插入的通知
+    const notifications: any = await db.execute(sql`
+      SELECT * FROM alert_notifications
+      WHERE id = LAST_INSERT_ID()
+      LIMIT 1
+    `);
+
+    if (notifications && notifications[0] && notifications[0].length > 0) {
+      const row = notifications[0][0] as any;
+      return {
+        ...row,
+        metadata: row.metadata ? JSON.parse(row.metadata) : null,
+        is_read: Boolean(row.is_read)
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[Database] Error creating alert notification:", error);
+    return null;
+  }
+}
+
+/**
+ * 獲取用戶的通知
+ */
+export async function getUserAlertNotifications(
+  userId: number,
+  limit: number = 50,
+  offset: number = 0
+): Promise<AlertNotification[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user alert notifications: database not available");
+    return [];
+  }
+
+  try {
+    const result: any = await db.execute(sql`
+      SELECT * FROM alert_notifications
+      WHERE user_id = ${userId}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `);
+
+    if (!result || !result[0]) return [];
+
+    return result[0].map((row: any) => ({
+      ...row,
+      metadata: row.metadata ? JSON.parse(row.metadata) : null,
+      is_read: Boolean(row.is_read)
+    }));
+  } catch (error) {
+    console.error("[Database] Error getting user alert notifications:", error);
+    return [];
+  }
+}
+
+/**
+ * 獲取未讀警報通知數量
+ */
+export async function getUnreadAlertNotificationCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get unread alert notification count: database not available");
+    return 0;
+  }
+
+  try {
+    const result: any = await db.execute(sql`
+      SELECT COUNT(*) as count FROM alert_notifications
+      WHERE user_id = ${userId} AND is_read = FALSE
+    `);
+
+    if (result && result[0] && result[0].length > 0) {
+      return result[0][0].count;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error("[Database] Error getting unread alert notification count:", error);
+    return 0;
+  }
+}
+
+/**
+ * 標記警報通知為已讀
+ */
+export async function markAlertNotificationAsRead(notificationId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot mark alert notification as read: database not available");
+    return false;
+  }
+
+  try {
+    await db.execute(sql`
+      UPDATE alert_notifications
+      SET is_read = TRUE
+      WHERE id = ${notificationId}
+    `);
+
+    return true;
+  } catch (error) {
+    console.error("[Database] Error marking alert notification as read:", error);
+    return false;
+  }
+}
+
+/**
+ * 標記所有通知為已讀
+ */
+export async function markAllNotificationsAsRead(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot mark all notifications as read: database not available");
+    return false;
+  }
+
+  try {
+    await db.execute(sql`
+      UPDATE alert_notifications
+      SET is_read = TRUE
+      WHERE user_id = ${userId} AND is_read = FALSE
+    `);
+
+    return true;
+  } catch (error) {
+    console.error("[Database] Error marking all notifications as read:", error);
+    return false;
+  }
+}
+
+/**
+ * 獲取活躍的訂閱（用於警報檢測）
+ */
+export async function getActiveSubscriptionsByType(
+  subscriptionType: 'address' | 'market' | 'category',
+  targetId?: string
+): Promise<AlertSubscription[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get active subscriptions: database not available");
+    return [];
+  }
+
+  try {
+    let query = sql`
+      SELECT * FROM alert_subscriptions
+      WHERE subscription_type = ${subscriptionType}
+        AND is_active = TRUE
+    `;
+
+    if (targetId) {
+      query = sql`${query} AND target_id = ${targetId}`;
+    }
+
+    const result: any = await db.execute(query);
+
+    if (!result || !result[0]) return [];
+
+    return result[0].map((row: any) => ({
+      ...row,
+      alert_types: JSON.parse(row.alert_types),
+      is_active: Boolean(row.is_active)
+    }));
+  } catch (error) {
+    console.error("[Database] Error getting active subscriptions:", error);
+    return [];
+  }
+}
