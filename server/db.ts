@@ -1031,3 +1031,73 @@ export async function getActiveSubscriptionsByType(
     return [];
   }
 }
+
+
+// ============ Address Comparison Operations ============
+
+export async function compareAddresses(addressIds: number[]) {
+  const db = await getDb();
+  if (!db) {
+    console.warn('[Database] Cannot compare addresses: database not available');
+    return [];
+  }
+
+  try {
+    // 使用 IN 子句查詢多個地址
+    const result: any = await db.execute(sql`
+      SELECT 
+        id,
+        address,
+        suspicion_score,
+        win_rate,
+        total_volume,
+        total_trades,
+        avg_trade_size,
+        win_rate_high_score,
+        early_trading_score,
+        large_trade_score,
+        timing_score,
+        selectivity_score,
+        first_seen_at,
+        last_active_at
+      FROM addresses
+      WHERE id IN (${addressIds.join(',')})
+    `);
+    return result[0] as any[];
+  } catch (error) {
+    console.error('[Database] Error comparing addresses:', error);
+    return [];
+  }
+}
+
+export async function searchAddresses(searchTerm: string, limit: number = 20) {
+  const db = await getDb();
+  if (!db) {
+    console.warn('[Database] Cannot search addresses: database not available');
+    return [];
+  }
+
+  try {
+    // 嘗試將搜索詞解析為數字 ID
+    const numericId = parseInt(searchTerm);
+    const searchPattern = `%${searchTerm}%`;
+
+    const result: any = await db.execute(sql`
+      SELECT 
+        id,
+        address,
+        suspicion_score,
+        win_rate,
+        total_volume,
+        total_trades
+      FROM addresses
+      WHERE address LIKE ${searchPattern} OR id = ${isNaN(numericId) ? 0 : numericId}
+      ORDER BY total_volume DESC
+      LIMIT ${limit}
+    `);
+    return result[0] as any[];
+  } catch (error) {
+    console.error('[Database] Error searching addresses:', error);
+    return [];
+  }
+}

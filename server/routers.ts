@@ -214,7 +214,7 @@ export const appRouter = router({
         // 模擬可疑度分數分解（後續可以替換為真實數據）
         const addressId = input.addressId;
         
-        // 使用 addressId 生成可重現的模擬數據
+        // 使用 addressId 生成可重u8907的模擬數據
         const seed = addressId;
         const random = (min: number, max: number) => {
           const x = Math.sin(seed * 9999) * 10000;
@@ -246,6 +246,51 @@ export const appRouter = router({
             selectivity: 10,
           },
         };
+      }),
+
+    // 地址比較 API
+    compare: publicProcedure
+      .input(z.object({
+        addressIds: z.array(z.number()).min(2).max(4),
+      }))
+      .query(async ({ input }) => {
+        const addresses = await db.compareAddresses(input.addressIds);
+        
+        // 計算每個地址的綜合評分
+        const addressesWithScore = addresses.map((addr: any) => {
+          // 綜合評分 = 勝率 * 0.3 + 可疑度 * 0.3 + 交易量 * 0.2 + 交易次數 * 0.2
+          const normalizedWinRate = (addr.win_rate || 0) / 100;
+          const normalizedSuspicion = (addr.suspicion_score || 0) / 100;
+          const normalizedVolume = Math.min((addr.total_volume || 0) / 1000000, 1); // 正規化到 1M
+          const normalizedTrades = Math.min((addr.total_trades || 0) / 1000, 1); // 正規化到 1000
+          
+          const overallScore = Math.round(
+            normalizedWinRate * 30 +
+            normalizedSuspicion * 30 +
+            normalizedVolume * 20 +
+            normalizedTrades * 20
+          );
+
+          return {
+            ...addr,
+            overallScore,
+          };
+        });
+
+        // 排序，最高分在前
+        addressesWithScore.sort((a: any, b: any) => b.overallScore - a.overallScore);
+
+        return addressesWithScore;
+      }),
+
+    // 地址搜索 API
+    search: publicProcedure
+      .input(z.object({
+        query: z.string().min(1),
+        limit: z.number().min(1).max(50).default(20),
+      }))
+      .query(async ({ input }) => {
+        return await db.searchAddresses(input.query, input.limit);
       }),
   }),
 
