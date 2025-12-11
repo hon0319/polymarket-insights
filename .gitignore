@@ -105,16 +105,3 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
-env/
-ENV/
-python-backend/venv/
-*.egg-info/
-.pytest_cache/
