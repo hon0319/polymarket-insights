@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && pnpm install && pnpm build",
+  "outputDirectory": "client/dist",
+  "framework": "vite",
+  "installCommand": "pnpm install",
+  "devCommand": "pnpm dev",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://your-railway-backend.railway.app/api/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "VITE_APP_TITLE": "Bentana Insights",
+    "VITE_APP_LOGO": "/logo.svg"
+  }
+}
