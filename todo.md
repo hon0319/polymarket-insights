@@ -839,3 +839,43 @@
 - [ ] 端到端測試整個數據流
 - [ ] 性能優化
 - [ ] 保存 checkpoint
+
+
+## 地址排行榜頁面實施（2024-12-12）
+
+**已完成的工作**:
+- ✅ 創建 server/db_addresses.ts 模組（真u5be6數據查詢）
+- ✅ 更新 server/routers.ts 使u7528 dbAddresses 函u6578
+- ✅ 前u7aedu9801面已存在（AddressLeaderboard.tsx）
+- ✅ 路u7531已註u518a（/addresses）
+- ✅ 數據庫已有 434 個u地址數據
+
+**待完成的工作**:
+- [ ] 測u8a66地址排行榜u9801面顯u793a
+- [ ] 驗證 API 數據正確性
+- [ ] 優u5316前u7aefu5c55示（如果u9700要）
+
+### Phase 1: 實作後端 API 端點
+- [ ] 在 server/db.ts 添加獲取地址列表的查詢函數
+- [ ] 在 server/routers.ts 添加 addresses.getLeaderboard API
+- [ ] 支持分頁、排序、篩選參數
+- [ ] 測試 API 端點
+
+### Phase 2: 創建前端排行榜頁面
+- [ ] 創建 AddressLeaderboard.tsx 頁面組件
+- [ ] 實作地址列表表格
+- [ ] 顯示巨鯨標記
+- [ ] 顯示可疑度分數
+- [ ] 顯示交易統計數據
+- [ ] 實作排序功能
+- [ ] 實作搜索功能
+- [ ] 添加路由配置
+
+### Phase 3: 測試和優化
+- [ ] 測試頁面顯示
+- [ ] 測試排序和篩選
+- [ ] 測試搜索功能
+- [ ] 優化性能
+
+### Phase 4: 保存 checkpoint
+- [ ] 保存 checkpoint

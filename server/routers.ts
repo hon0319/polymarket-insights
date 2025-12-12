@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import * as dbAddresses from "./db_addresses";
 
 export const appRouter = router({
   system: systemRouter,
@@ -149,24 +150,30 @@ export const appRouter = router({
       .input(z.object({
         limit: z.number().min(1).max(100).default(20),
         offset: z.number().min(0).default(0),
+        sortBy: z.enum(['total_volume', 'total_trades', 'suspicion_score', 'win_rate']).optional(),
+        sortOrder: z.enum(['asc', 'desc']).optional(),
+        search: z.string().optional(),
       }).optional())
       .query(async ({ input }) => {
-        return await db.getAddresses(input || {});
+        const addresses = await dbAddresses.getAddresses(input || {});
+        const total = await dbAddresses.getAddressCount({ search: input?.search });
+        return { addresses, total };
       }),
 
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
-        return await db.getAddressById(input.id);
+        return await dbAddresses.getAddressById(input.id);
       }),
 
     getLeaderboard: publicProcedure
       .input(z.object({
-        metric: z.enum(['suspicion_score', 'win_rate', 'total_volume']).default('suspicion_score'),
+        metric: z.enum(['suspicion_score', 'win_rate', 'total_volume', 'total_trades']).default('total_volume'),
         limit: z.number().min(1).max(50).default(10),
+        offset: z.number().min(0).default(0),
       }).optional())
       .query(async ({ input }) => {
-        return await db.getAddressLeaderboard(input || {});
+        return await dbAddresses.getAddressLeaderboard(input || {});
       }),
 
     getTrades: publicProcedure
@@ -181,7 +188,7 @@ export const appRouter = router({
       }),
 
     getStats: publicProcedure.query(async () => {
-      return await db.getAddressStats();
+      return await dbAddresses.getAddressStats();
     }),
 
     getTradeHistory: publicProcedure
