@@ -14,6 +14,8 @@ import AddressDetail from "./pages/AddressDetail";
 import Subscriptions from "./pages/Subscriptions";
 import Notifications from "./pages/Notifications";
 import AddressCompare from "./pages/AddressCompare";
+import CategoryCrypto from "./pages/CategoryCrypto";
+import CategorySports from "./pages/CategorySports";
 import Navbar from "./components/Navbar";
 
 function Router() {
@@ -27,6 +29,8 @@ function Router() {
       <Route path={"/addresses"} component={AddressLeaderboard} />
       <Route path={"/address/:id"} component={AddressDetail} />
       <Route path={"/compare"} component={AddressCompare} />
+      <Route path={"/category/crypto"} component={CategoryCrypto} />
+      <Route path={"/category/sports"} component={CategorySports} />
       <Route path={"/subscriptions"} component={Subscriptions} />
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/404"} component={NotFound} />

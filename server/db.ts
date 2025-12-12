@@ -194,6 +194,40 @@ export async function getMarketByConditionId(conditionId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getMarketCategoryStats() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    // Get all active markets
+    const allMarkets = await db.select().from(markets).where(eq(markets.isActive, true));
+    
+    // Group by category and calculate stats
+    const categoryMap = new Map<string, { count: number; totalVolume: number }>();
+    
+    allMarkets.forEach(market => {
+      const category = market.category || 'Other';
+      const existing = categoryMap.get(category) || { count: 0, totalVolume: 0 };
+      categoryMap.set(category, {
+        count: existing.count + 1,
+        totalVolume: existing.totalVolume + (market.totalVolume || 0)
+      });
+    });
+    
+    // Convert to array and sort by count
+    return Array.from(categoryMap.entries())
+      .map(([category, stats]) => ({
+        category,
+        count: stats.count,
+        totalVolume: stats.totalVolume
+      }))
+      .sort((a, b) => b.count - a.count);
+  } catch (error) {
+    console.error('[Database] Error getting category stats:', error);
+    return [];
+  }
+}
+
 // ============ Prediction Operations ============
 
 export async function createPrediction(prediction: InsertPrediction) {

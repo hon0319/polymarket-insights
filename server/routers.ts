@@ -42,6 +42,11 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getMarketByConditionId(input.conditionId);
       }),
+
+    getCategoryStats: publicProcedure
+      .query(async () => {
+        return await db.getMarketCategoryStats();
+      }),
   }),
 
   // Predictions API

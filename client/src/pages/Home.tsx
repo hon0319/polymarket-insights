@@ -42,9 +42,12 @@ export default function Home() {
 
             {/* Tagline */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              AI 驅動的預測市場分析平台
+              多元預測市場分析平台
               <br />
-              <span className="text-primary">實時追蹤</span> · <span className="text-secondary">智能預測</span> · <span className="text-accent">大額警報</span>
+              <span className="text-primary">政治</span> · <span className="text-secondary">加密貨幣</span> · <span className="text-accent">體育</span> · <span className="text-primary">娛樂</span>
+            </p>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">
+              AI 驅動的實時分析 · 智能預測 · 大額警報
             </p>
 
             {/* CTA Buttons */}
@@ -186,6 +189,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Category Stats Section */}
+      <CategoryStatsSection />
+
       {/* Features Section */}
       <section className="py-24 border-t border-border">
         <div className="container">
@@ -269,7 +275,7 @@ export default function Home() {
             <div className="text-center md:text-left">
               <p className="font-bold text-lg neon-glow-pink">BENTANA INSIGHTS</p>
               <p className="text-sm text-muted-foreground mt-1">
-                AI 驅動的預測市場分析平台
+                多元預測市場分析平台 · AI 驅動的實時分析
               </p>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
@@ -291,8 +297,8 @@ export default function Home() {
 const features = [
   {
     icon: TrendingUp,
-    title: "實時市場追蹤",
-    description: "通過 WebSocket 實時接收預測市場的最新交易數據，第一時間掌握市場動態。"
+    title: "多元市場追蹤",
+    description: "追蹤政治、加密貨幣、體育、娛樂等多類別預測市場，實時掌握市場動態。"
   },
   {
     icon: Brain,
@@ -362,3 +368,103 @@ const pricingTiers = [
     ]
   }
 ];
+
+// Category Stats Section Component
+function CategoryStatsSection() {
+  const { data: categoryStats, isLoading } = trpc.markets.getCategoryStats.useQuery();
+
+  if (isLoading) {
+    return (
+      <section className="py-24 border-t border-border bg-gradient-to-b from-background/50 to-background">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 neon-glow-cyan">
+              市場分布
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              探索不同類別的預測市場
+            </p>
+          </div>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!categoryStats || categoryStats.length === 0) {
+    return null;
+  }
+
+  const categoryColors: Record<string, string> = {
+    'Politics': 'from-blue-500/20 to-blue-600/20 border-blue-500/50',
+    'Crypto': 'from-orange-500/20 to-orange-600/20 border-orange-500/50',
+    'Sports': 'from-green-500/20 to-green-600/20 border-green-500/50',
+    'Entertainment': 'from-purple-500/20 to-purple-600/20 border-purple-500/50',
+    'Economics': 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/50',
+    'Other': 'from-gray-500/20 to-gray-600/20 border-gray-500/50'
+  };
+
+  const categoryLabels: Record<string, string> = {
+    'Politics': '政治',
+    'Crypto': '加密貨幣',
+    'Sports': '體育',
+    'Entertainment': '娛樂',
+    'Economics': '經濟',
+    'Other': '其他'
+  };
+
+  return (
+    <section className="py-24 border-t border-border bg-gradient-to-b from-background/50 to-background">
+      <div className="container">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 neon-glow-cyan">
+            市場分布
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            探索不同類別的預測市場，找到您感興趣的領域
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-6xl mx-auto">
+          {categoryStats.map((stat) => {
+            // Use dedicated category pages for Crypto and Sports
+            const categoryUrls: Record<string, string> = {
+              'Crypto': '/category/crypto',
+              'Sports': '/category/sports',
+            };
+            const href = categoryUrls[stat.category] || `/markets?category=${stat.category}`;
+            
+            return (
+            <Link key={stat.category} href={href}>
+              <Card className={`p-6 bg-gradient-to-br ${categoryColors[stat.category] || categoryColors['Other']} backdrop-blur-sm border-2 hover:scale-105 transition-all duration-300 cursor-pointer group h-full`}>
+                <div className="text-center">
+                  <div className="text-3xl font-black mb-2 group-hover:scale-110 transition-transform">
+                    {stat.count}
+                  </div>
+                  <div className="text-sm font-semibold mb-1">
+                    {categoryLabels[stat.category] || stat.category}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    市場
+                  </div>
+                </div>
+              </Card>
+            </Link>
+            );
+          })}
+        </div>
+
+        <div className="text-center mt-8">
+          <Link href="/markets">
+            <Button variant="outline" size="lg">
+              查看所有市場
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
