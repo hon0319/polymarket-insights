@@ -32,8 +32,8 @@ export default function Markets() {
         <div className="container py-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold neon-glow-pink">政治市場</h1>
-              <p className="text-muted-foreground mt-1">實時追蹤預測市場走勢</p>
+              <h1 className="text-3xl md:text-4xl font-bold neon-glow-pink">預測市場</h1>
+              <p className="text-muted-foreground mt-1">追蹤政治、加密貨幣、體育、娛樂等多元市場走勢</p>
             </div>
             <Link href="/">
               <Button variant="outline">返回首頁</Button>
@@ -63,8 +63,11 @@ export default function Markets() {
               <SelectContent>
                 <SelectItem value="all">所有類別</SelectItem>
                 <SelectItem value="Politics">政治</SelectItem>
-                <SelectItem value="Elections">選舉</SelectItem>
-                <SelectItem value="Policy">政策</SelectItem>
+                <SelectItem value="Crypto">加密貨幣</SelectItem>
+                <SelectItem value="Sports">體育</SelectItem>
+                <SelectItem value="Entertainment">娛樂</SelectItem>
+                <SelectItem value="Economics">經濟</SelectItem>
+                <SelectItem value="Other">其他</SelectItem>
               </SelectContent>
             </Select>
           </div>
