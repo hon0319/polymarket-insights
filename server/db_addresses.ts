@@ -53,7 +53,17 @@ export async function getAddresses(params: {
     query += ` LIMIT ${limit} OFFSET ${offset}`;
     
     const [rows] = await db.execute(query);
-    return rows as unknown as any[];
+    
+    // 轉換數值類型（MySQL 返回的 decimal 是字符串）
+    return (rows as unknown as any[]).map((row: any) => ({
+      ...row,
+      total_volume: parseFloat(row.total_volume || '0'),
+      total_trades: parseInt(row.total_trades || '0', 10),
+      avg_trade_size: parseFloat(row.avg_trade_size || '0'),
+      win_rate: parseFloat(row.win_rate || '0'),
+      suspicion_score: parseFloat(row.suspicion_score || '0'),
+      is_suspicious: Boolean(row.is_suspicious)
+    }));
   } catch (error) {
     console.error('[Database] Error getting addresses:', error);
     return [];
@@ -123,7 +133,22 @@ export async function getAddressById(addressId: number) {
     `;
     
     const [rows] = await db.execute(query);
-    return (rows as any)[0] || null;
+    const row = (rows as any)[0];
+    if (!row) return null;
+    
+    // 轉換數值類型
+    return {
+      ...row,
+      total_volume: parseFloat(row.total_volume || '0'),
+      total_trades: parseInt(row.total_trades || '0', 10),
+      avg_trade_size: parseFloat(row.avg_trade_size || '0'),
+      win_rate: parseFloat(row.win_rate || '0'),
+      win_count: parseInt(row.win_count || '0', 10),
+      loss_count: parseInt(row.loss_count || '0', 10),
+      settled_count: parseInt(row.settled_count || '0', 10),
+      suspicion_score: parseFloat(row.suspicion_score || '0'),
+      is_suspicious: Boolean(row.is_suspicious)
+    };
   } catch (error) {
     console.error('[Database] Error getting address by ID:', error);
     return null;
@@ -161,7 +186,8 @@ export async function getAddressStats() {
       whale_addresses: 0,
       avg_suspicion_score: 0,
       avg_win_rate: 0,
-      total_volume: 0
+      total_volume: 0,
+      total_trades: 0
     };
   }
 
@@ -173,18 +199,34 @@ export async function getAddressStats() {
         SUM(CASE WHEN total_volume >= 100000000000 THEN 1 ELSE 0 END) as whale_addresses,
         AVG(suspicion_score) as avg_suspicion_score,
         AVG(win_rate) as avg_win_rate,
-        SUM(total_volume) as total_volume
+        SUM(total_volume) as total_volume,
+        SUM(total_trades) as total_trades
       FROM addresses
     `;
     
     const [rows] = await db.execute(query);
-    return (rows as any)[0] || {
-      total_addresses: 0,
-      suspicious_addresses: 0,
-      whale_addresses: 0,
-      avg_suspicion_score: 0,
-      avg_win_rate: 0,
-      total_volume: 0
+    const row = (rows as any)[0];
+    if (!row) {
+      return {
+        total_addresses: 0,
+        suspicious_addresses: 0,
+        whale_addresses: 0,
+        avg_suspicion_score: 0,
+        avg_win_rate: 0,
+        total_volume: 0,
+        total_trades: 0
+      };
+    }
+    
+    // 轉換數值類型
+    return {
+      total_addresses: parseInt(row.total_addresses || '0', 10),
+      suspicious_addresses: parseInt(row.suspicious_addresses || '0', 10),
+      whale_addresses: parseInt(row.whale_addresses || '0', 10),
+      avg_suspicion_score: parseFloat(row.avg_suspicion_score || '0'),
+      avg_win_rate: parseFloat(row.avg_win_rate || '0'),
+      total_volume: parseFloat(row.total_volume || '0'),
+      total_trades: parseInt(row.total_trades || '0', 10)
     };
   } catch (error) {
     console.error('[Database] Error getting address stats:', error);
@@ -194,7 +236,8 @@ export async function getAddressStats() {
       whale_addresses: 0,
       avg_suspicion_score: 0,
       avg_win_rate: 0,
-      total_volume: 0
+      total_volume: 0,
+      total_trades: 0
     };
   }
 }
