@@ -161,7 +161,8 @@ export async function getAddressStats() {
       whale_addresses: 0,
       avg_suspicion_score: 0,
       avg_win_rate: 0,
-      total_volume: 0
+      total_volume: 0,
+      total_trades: 0
     };
   }
 
@@ -173,7 +174,8 @@ export async function getAddressStats() {
         SUM(CASE WHEN total_volume >= 100000000000 THEN 1 ELSE 0 END) as whale_addresses,
         AVG(suspicion_score) as avg_suspicion_score,
         AVG(win_rate) as avg_win_rate,
-        SUM(total_volume) as total_volume
+        SUM(total_volume) as total_volume,
+        SUM(total_trades) as total_trades
       FROM addresses
     `;
     
@@ -184,7 +186,8 @@ export async function getAddressStats() {
       whale_addresses: 0,
       avg_suspicion_score: 0,
       avg_win_rate: 0,
-      total_volume: 0
+      total_volume: 0,
+      total_trades: 0
     };
   } catch (error) {
     console.error('[Database] Error getting address stats:', error);
@@ -194,7 +197,8 @@ export async function getAddressStats() {
       whale_addresses: 0,
       avg_suspicion_score: 0,
       avg_win_rate: 0,
-      total_volume: 0
+      total_volume: 0,
+      total_trades: 0
     };
   }
 }

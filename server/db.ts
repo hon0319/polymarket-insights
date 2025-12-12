@@ -295,7 +295,7 @@ export async function getWhaleTrades(limit = 100) {
   // 第二步：為每個交易獲取最新的預測
   const result = await Promise.all(
     tradesWithMarkets.map(async (trade) => {
-      const latestPrediction = await getLatestPredictionByMarketId(trade.marketId);
+      const latestPrediction = trade.marketId ? await getLatestPredictionByMarketId(trade.marketId) : undefined;
       
       return {
         ...trade,
