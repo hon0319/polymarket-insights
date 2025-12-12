@@ -9,7 +9,7 @@ import { Link } from "wouter";
 export default function AddressLeaderboard() {
   const { data: stats, isLoading: statsLoading } = trpc.addresses.getStats.useQuery();
   const { data: leaderboard, isLoading: leaderboardLoading } = trpc.addresses.getLeaderboard.useQuery({
-    metric: 'total_volume',
+    metric: 'suspicion_score',
     limit: 20
   });
 
@@ -100,7 +100,7 @@ export default function AddressLeaderboard() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.avg_win_rate ? Number(stats.avg_win_rate).toFixed(1) : 0}%</div>
+                <div className="text-2xl font-bold">{stats?.avg_win_rate?.toFixed(1) || 0}%</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   已結算市場
                 </p>
@@ -119,7 +119,7 @@ export default function AddressLeaderboard() {
               <Skeleton className="h-8 w-16" />
             ) : (
               <>
-                <div className="text-2xl font-bold">{stats?.avg_suspicion_score ? Number(stats.avg_suspicion_score).toFixed(1) : 0}</div>
+                <div className="text-2xl font-bold">{stats?.avg_suspicion_score?.toFixed(1) || 0}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   滿分 100
                 </p>
@@ -190,7 +190,7 @@ export default function AddressLeaderboard() {
                       <TableCell className="text-right">
                         {address.win_rate ? (
                           <div className="flex items-center justify-end space-x-1">
-                            <span className="font-medium">{Number(address.win_rate).toFixed(1)}%</span>
+                            <span className="font-medium">{address.win_rate.toFixed(1)}%</span>
                             {address.win_rate >= 60 ? (
                               <TrendingUp className="h-4 w-4 text-green-600" />
                             ) : (
