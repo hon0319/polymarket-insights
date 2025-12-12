@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as count FROM trades;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT COUNT(*) as count FROM trades;",
+  "rows": [
+    {
+      "count": "1197"
+    }
+  ],
+  "messages": [],
+  "stdout": "count\n1197\n",
+  "stderr": "",
+  "execution_time_ms": 1557
+}

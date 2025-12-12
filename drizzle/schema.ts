@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, index } from "drizzle-orm/mysql-core";
+import { int, bigint, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, decimal, index } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -72,7 +72,7 @@ export const trades = mysqlTable("trades", {
   id: int("id").autoincrement().primaryKey(),
   
   // 市場信息
-  marketId: int("marketId").notNull(),
+  marketId: int("marketId").default(0), // 可選，需要從 assetId 查詢
   conditionId: varchar("conditionId", { length: 255 }),
   
   // 交易基本信息
@@ -82,18 +82,18 @@ export const trades = mysqlTable("trades", {
   // Maker 信息
   makerAddress: varchar("makerAddress", { length: 42 }).notNull(),
   makerAssetId: varchar("makerAssetId", { length: 255 }).notNull(),
-  makerAmount: int("makerAmount").notNull(), // 原始金額（以最小單位）
+  makerAmount: bigint("makerAmount", { mode: "number" }).notNull(), // 原始金額（以最小單位）
   
   // Taker 信息
   takerAddress: varchar("takerAddress", { length: 42 }).notNull(),
   takerAssetId: varchar("takerAssetId", { length: 255 }).notNull(),
-  takerAmount: int("takerAmount").notNull(),
+  takerAmount: bigint("takerAmount", { mode: "number" }).notNull(),
   
   // 交易詳情
   side: mysqlEnum("side", ["YES", "NO"]).notNull(),
-  price: int("price").notNull(), // 以分為單位
-  amount: int("amount").notNull(), // 交易金額（美元，以分為單位）
-  fee: int("fee").default(0), // 手續費
+  price: bigint("price", { mode: "number" }).notNull(), // 以分為單位
+  amount: bigint("amount", { mode: "number" }).notNull(), // 交易金額（美元，以分為單位）
+  fee: bigint("fee", { mode: "number" }).default(0), // 手續費
   
   // 標記
   isWhale: boolean("isWhale").default(false).notNull(),

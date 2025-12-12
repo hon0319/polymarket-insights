@@ -22,6 +22,20 @@
       "when": 1765528481143,
       "tag": "0002_wonderful_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1765529533150,
+      "tag": "0003_grey_cyclops",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1765529630076,
+      "tag": "0004_fresh_tomorrow_man",
+      "breakpoints": true
     }
   ]
 }
