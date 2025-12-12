@@ -149,7 +149,7 @@ export default function AddressDetail() {
             <div className="space-y-1">
               <div className="text-sm text-muted-foreground">總交易量</div>
               <div className="text-2xl font-bold">
-                ${(address.total_volume / 1000).toFixed(1)}k
+                ${(Number(address.total_volume) / 1000).toFixed(1)}k
               </div>
             </div>
             <div className="space-y-1">
@@ -159,7 +159,7 @@ export default function AddressDetail() {
             <div className="space-y-1">
               <div className="text-sm text-muted-foreground">平均交易額</div>
               <div className="text-2xl font-bold">
-                ${address.avg_trade_size.toFixed(0)}
+                ${Number(address.avg_trade_size).toFixed(0)}
               </div>
             </div>
           </div>
@@ -414,7 +414,7 @@ export default function AddressDetail() {
                     <div className="space-y-1">
                       <div className="font-semibold">{perf.category}</div>
                       <div className="text-sm text-muted-foreground">
-                        {perf.total_trades} 筆交易 | ${(perf.total_volume / 1000).toFixed(1)}k
+                        {perf.total_trades} 筆交易 | ${(Number(perf.total_volume) / 1000).toFixed(1)}k
                       </div>
                     </div>
                     <div className="text-right space-y-1">
@@ -422,7 +422,7 @@ export default function AddressDetail() {
                         {perf.win_rate}% 勝率
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        ROI: {(perf.roi * 100).toFixed(0)}%
+                        ROI: {(Number(perf.roi) * 100).toFixed(0)}%
                       </div>
                     </div>
                   </div>
