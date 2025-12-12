@@ -14,6 +14,7 @@ import AddressDetail from "./pages/AddressDetail";
 import Subscriptions from "./pages/Subscriptions";
 import Notifications from "./pages/Notifications";
 import AddressCompare from "./pages/AddressCompare";
+import Navbar from "./components/Navbar";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function App() {
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
+          <Navbar />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
