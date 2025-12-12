@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total_addresses,\n  MAX(last_active_at) as latest_activity,\n  MIN(first_seen_at) as earliest_seen\nFROM addresses LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT COUNT(*) as total_addresses,\n  MAX(last_active_at) as latest_activity,\n  MIN(first_seen_at) as earliest_seen\nFROM addresses LIMIT 1;",
+  "rows": [
+    {
+      "total_addresses": "26",
+      "latest_activity": "NULL",
+      "earliest_seen": "2025-12-09 10:29:38"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_addresses\tlatest_activity\tearliest_seen\n26\tNULL\t2025-12-09 10:29:38\n",
+  "stderr": "",
+  "execution_time_ms": 1540
+}

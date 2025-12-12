@@ -1,0 +1,8 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_trades,\n  MAX(timestamp) as latest_trade,\n  MIN(timestamp) as earliest_trade,\n  COUNT(DISTINCT market_id) as markets_with_trades\nFROM trades;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT \n  COUNT(*) as total_trades,\n  MAX(timestamp) as latest_trade,\n  MIN(timestamp) as earliest_trade,\n  COUNT(DISTINCT market_id) as markets_with_trades\nFROM trades;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'market_id' in ''"
+  ]
+}

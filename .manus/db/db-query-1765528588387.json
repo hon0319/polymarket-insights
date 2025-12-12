@@ -1,0 +1,55 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS \nWHERE TABLE_NAME = 'addresses' \nAND TABLE_SCHEMA = DATABASE()\nORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS \nWHERE TABLE_NAME = 'addresses' \nAND TABLE_SCHEMA = DATABASE()\nORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "address"
+    },
+    {
+      "COLUMN_NAME": "first_seen_at"
+    },
+    {
+      "COLUMN_NAME": "last_active_at"
+    },
+    {
+      "COLUMN_NAME": "total_trades"
+    },
+    {
+      "COLUMN_NAME": "total_volume"
+    },
+    {
+      "COLUMN_NAME": "win_count"
+    },
+    {
+      "COLUMN_NAME": "loss_count"
+    },
+    {
+      "COLUMN_NAME": "settled_count"
+    },
+    {
+      "COLUMN_NAME": "win_rate"
+    },
+    {
+      "COLUMN_NAME": "avg_trade_size"
+    },
+    {
+      "COLUMN_NAME": "is_suspicious"
+    },
+    {
+      "COLUMN_NAME": "suspicion_score"
+    },
+    {
+      "COLUMN_NAME": "created_at"
+    },
+    {
+      "COLUMN_NAME": "updated_at"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\naddress\nfirst_seen_at\nlast_active_at\ntotal_trades\ntotal_volume\nwin_count\nloss_count\nsettled_count\nwin_rate\navg_trade_size\nis_suspicious\nsuspicion_score\ncreated_at\nupdated_at\n",
+  "stderr": "",
+  "execution_time_ms": 1532
+}

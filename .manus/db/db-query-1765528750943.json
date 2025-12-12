@@ -1,0 +1,13 @@
+{
+  "query": "SHOW TABLES LIKE 'sync_state';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SHOW TABLES LIKE 'sync_state';",
+  "rows": [
+    {
+      "Tables_in_4sa6kfx5mFXsBhiWnpTsNp (sync_state)": "sync_state"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_4sa6kfx5mFXsBhiWnpTsNp (sync_state)\nsync_state\n",
+  "stderr": "",
+  "execution_time_ms": 1521
+}

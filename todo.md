@@ -637,4 +637,59 @@
 - [x] 測試類別統計功能（API 和前端展示）
 - [x] 測試類別專屬頁面（加密貨幣、體育）
 - [x] 確認 TypeScript 編譯無錯誤
+- [x] 保存 checkpoint (version: d83bd71d)
+
+## 可疑地址偵測和巨鯨錢包追蹤功能完善（2024-12-12）
+
+### Phase 1: 搜索 GitHub 相關開源專案和代碼
+- [x] 搜索 Polymarket 數據爬蟲相關項目（找到 warproxxx/poly_data）
+- [x] 搜索區塊鏈地址追蹤和分析工具（s0md3v/Orbit）
+- [x] 搜索可疑交易檢測算法（找到多篇學術論文）
+- [x] 搜索巨鯨錢包監控系統（Polywhaler, Whale Alert）
+- [x] 分析找到的代碼和技術方案
+- [x] 深入研究 warproxxx/poly_data 項目
+- [x] 分析 Goldsky Subgraph API
+- [x] 研究 polymarket-apis Python 套件
+- [x] 編寫完整的研究報告
+
+### Phase 2: 分析現有系統的數據流和痛點
+- [x] 檢查當前數據庫的數據時效性（trades 表完全為空）
+- [x] 統計當前追蹤的地址數量（addresses 表不在 Drizzle schema）
+- [x] 分析 Python 後端的數據收集流程（雙數據庫架構）
+- [x] 識別數據完整性問題的根源（缺少 Orderbook Subgraph）
+- [x] 記錄現有系統的技術限制（編寫 current_system_analysis.md）
+
+### Phase 3: 設計數據收集和更新策略
+- [x] 設計實時數據更新機制（增量更新 + 定時任務）
+- [x] 設計地址發現和追蹤策略（從交易事件提取）
+- [x] 設計數據補全方案（歷史回填 + 缺口檢測）
+- [x] 規劃數據存儲結構優化（擴展 schema + 索引）
+- [x] 設計 API 限流和錯誤處理（重試 + 退避 + 監控）
+- [x] 編寫完整的設計文檔（data_collection_strategy.md）
+
+### Phase 4: 實作地址追蹤和分析功能
+- [x] 擴展數據庫 Schema（addresses, trades, sync_state）
+- [x] 與 Python backend 現有表結構保持一致
+- [x] 運行數據庫遷移（成功）
+- [x] 驗證所有表和欄位
+- [ ] 實作 Orderbook Subgraph 收集器
+- [ ] 實作地址持倉追蹤
+- [ ] 實作交易歷史記錄
+- [ ] 實作地址行為分析
+- [ ] 實作地址關聯分析
+- [ ] 實作地址標籤系統
+
+### Phase 5: 實作可疑地址偵測系統
+- [ ] 定義可疑行為特徵
+- [ ] 實作異常交易檢測
+- [ ] 實作巨鯨識別算法
+- [ ] 實作風險評分系統
+- [ ] 實作警報觸發機制
+
+### Phase 6: 測試和優化系統效能
+- [ ] 測試數據收集效能
+- [ ] 測試地址追蹤準確性
+- [ ] 測試可疑地址偵測效果
+- [ ] 優化數據庫查詢效能
+- [ ] 優化系統資源使用
 - [ ] 保存 checkpoint

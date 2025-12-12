@@ -1,0 +1,27 @@
+{
+  "query": "SELECT * FROM addresses LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT * FROM addresses LIMIT 1;",
+  "rows": [
+    {
+      "id": "1",
+      "address": "0x8f3ff3c5750c20479f68db28407912bd8df67afa",
+      "first_seen_at": "2025-12-09 10:29:38",
+      "last_active_at": "NULL",
+      "total_trades": "0",
+      "total_volume": "0.000000",
+      "win_count": "0",
+      "loss_count": "0",
+      "settled_count": "0",
+      "win_rate": "NULL",
+      "avg_trade_size": "0.000000",
+      "is_suspicious": "0",
+      "suspicion_score": "0.00",
+      "created_at": "2025-12-09 10:29:38",
+      "updated_at": "2025-12-09 11:03:37"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\taddress\tfirst_seen_at\tlast_active_at\ttotal_trades\ttotal_volume\twin_count\tloss_count\tsettled_count\twin_rate\tavg_trade_size\tis_suspicious\tsuspicion_score\tcreated_at\tupdated_at\n1\t0x8f3ff3c5750c20479f68db28407912bd8df67afa\t2025-12-09 10:29:38\tNULL\t0\t0.000000\t0\t0\t0\tNULL\t0.000000\t0\t0.00\t2025-12-09 10:29:38\t2025-12-09 11:03:37\n",
+  "stderr": "",
+  "execution_time_ms": 1489
+}

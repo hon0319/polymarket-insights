@@ -1,0 +1,26 @@
+{
+  "query": "SHOW COLUMNS FROM addresses LIKE 'total%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SHOW COLUMNS FROM addresses LIKE 'total%';",
+  "rows": [
+    {
+      "Field": "total_trades",
+      "Type": "int(11)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "0",
+      "Extra": ""
+    },
+    {
+      "Field": "total_volume",
+      "Type": "decimal(20,6)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "0",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\ntotal_trades\tint(11)\tYES\t\t0\t\ntotal_volume\tdecimal(20,6)\tYES\tMUL\t0\t\n",
+  "stderr": "",
+  "execution_time_ms": 1539
+}

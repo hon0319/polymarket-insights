@@ -1,0 +1,17 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_trades,\n  MAX(timestamp) as latest_trade,\n  MIN(timestamp) as earliest_trade,\n  COUNT(DISTINCT marketId) as markets_with_trades,\n  SUM(CASE WHEN isWhale = 1 THEN 1 ELSE 0 END) as whale_trades\nFROM trades;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 4EZig2ebo1q21z8.root --database 4sa6kfx5mFXsBhiWnpTsNp --execute SELECT \n  COUNT(*) as total_trades,\n  MAX(timestamp) as latest_trade,\n  MIN(timestamp) as earliest_trade,\n  COUNT(DISTINCT marketId) as markets_with_trades,\n  SUM(CASE WHEN isWhale = 1 THEN 1 ELSE 0 END) as whale_trades\nFROM trades;",
+  "rows": [
+    {
+      "total_trades": "1197",
+      "latest_trade": "2025-12-09 08:12:48",
+      "earliest_trade": "2025-12-09 03:32:41",
+      "markets_with_trades": "286",
+      "whale_trades": "57"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_trades\tlatest_trade\tearliest_trade\tmarkets_with_trades\twhale_trades\n1197\t2025-12-09 08:12:48\t2025-12-09 03:32:41\t286\t57\n",
+  "stderr": "",
+  "execution_time_ms": 1603
+}
